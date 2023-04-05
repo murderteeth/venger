@@ -29,12 +29,11 @@
   },
   "scripts": {
     "start": "run-p start:**",
-    "start:server": "cd api && yarn start",
+    "start:server": "cd api && yarn build && yarn start",
     "start:app": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "generate": "wagmi generate"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [

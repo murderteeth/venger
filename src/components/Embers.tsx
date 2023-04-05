@@ -35,7 +35,7 @@ export default function Embers({ className }: { className?: string }) {
     if(!canvas.current) return
 
     const emberList = emberfield(canvas.current)
-    const frameDelay = 32
+    const frameDelay = 64
     const ctx = canvas.current?.getContext('2d')
     ctx?.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 

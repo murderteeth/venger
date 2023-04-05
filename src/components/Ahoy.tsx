@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react'
 import Embers from './Embers'
 import { Button } from './controls'
 import { useBusy } from './Busy'
+import { useLocalStorage } from 'usehooks-ts'
 
 interface MessageData {
   role: 'system' | 'user' | 'assistant',
@@ -18,23 +19,35 @@ function Panel() {
   return <div className={'grow h-full backdrop-blur-sm bg-white/5 border border-zinc-900'}></div>
 }
 
+interface World {
+  description: string,
+  summary: string
+}
+
 export default function Ahoy() {
   const {setBusy} = useBusy()
-  const [messages, setMessages] = useState<MessageData[]>([{
+  const [world, setWorld] = useLocalStorage<World|undefined>('world', undefined)
+  const [messages, setMessages] = useLocalStorage<MessageData[]>('messages', [{
     role: 'assistant', content: 'Ahoy!'
   }])
 
   const onWorld = useCallback(() => {
     setBusy(true)
-    fetch('/api/world').then(response => {
+    const request = fetch('/api/world', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({userPrompt: ''})
+    })
+    request.then(response => {
       response.json().then(json => {
+        setWorld(json)
         setMessages(current => {
-          return [...current, {role: 'assistant', content: json.description}]
+          return [...current, {role: 'assistant', content: json.summary}]
         })
         setBusy(false)
       })
     })
-  }, [setBusy, setMessages])
+  }, [setBusy, setMessages, setWorld])
 
   return <div className={`relative w-full h-full bg-black`}>
     <Embers className={'absolute z-1 inset-0'} />
@@ -42,7 +55,7 @@ export default function Ahoy() {
       <Panel />
       <div className={`w-2/5 h-full py-4 flex flex-col items-center justify-between gap-4`}>
         <div>
-          <div className={'font-[LadyRadical] text-4xl'}>{'dread.cat'}</div>
+          <div className={'font-[LadyRadical] text-4xl'}>{'Dread Henge'}</div>
         </div>
 
         <div className={'w-full h-full grow px-6 flex flex-col gap-4 overflow-y-auto'}>
