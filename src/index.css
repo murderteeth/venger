@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: LadyRadical;
+  src: url(./fonts/LadyRadical2Regular.woff);
+  font-weight: 400;
+  font-style: normal;
+}
+
+html, body, #root {
+  @apply w-full h-full;
+}
