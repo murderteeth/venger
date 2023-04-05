@@ -9,6 +9,7 @@ app.use(express.json())
 app.use(express.urlencoded({extended: true}))
 
 app.use('/api/ping', require('./routes/ping'))
+app.use('/api/world', require('./routes/world'))
 
 app.use(function(req, res, next) {
 	next(createError(404))

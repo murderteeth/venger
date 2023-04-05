@@ -5,7 +5,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "node -r dotenv/config ./bin/www dotenv_config_path=../.env"
+    "start": "ts-node -r dotenv/config ./bin/www dotenv_config_path=../.env"
   },
   "dependencies": {
     "@web-std/file": "^3.0.2",
@@ -15,5 +15,7 @@
     "http-errors": "^2.0.0",
     "morgan": "^1.10.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "ts-node": "^10.9.1"
+  }
 }
