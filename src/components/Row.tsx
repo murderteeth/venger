@@ -11,13 +11,13 @@ export default function Row({
 	alt?: boolean,
 	heading?: boolean
 	className?: string, 
-	children: ReactNode
+	children?: ReactNode
 }) {
 	return <div className={`
-		px-2 py-1 flex items-center justify-between rounded 
+		px-2 py-1 flex items-center justify-between 
 		${alt ? 'bg-red-400/5' : ''}
 		${heading ? 'mt-2 border-t dark:border-red-900/40': ''}
 		${className}`}>
-		<div>{label}</div>{children}
+		<div className={'grow'}>{label}</div>{children}
 	</div>;
 }

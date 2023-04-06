@@ -44,7 +44,7 @@ export default function Input(
     hover:border-red-500
     focus:border-red-700
     disabled:text-gray-800 hover:disabled:border-zinc-900
-    rounded-lg focus:ring-0
+    focus:ring-0
     ${className}`}>
     {children}
   </input>

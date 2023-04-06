@@ -15,6 +15,7 @@ ${'character'}
 - describe the first scene of the encounter to me in less than four sentances
 - end your response with a short list of options on how I can proceed
 - each option should be less than 4 words
+- only offer spell options if the character knows spells
 - the last options should be 'Improvise'
 
 rewrite your response in this JSON format:
