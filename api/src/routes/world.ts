@@ -1,18 +1,8 @@
 import express from 'express'
-import { Configuration, CreateChatCompletionResponse, OpenAIApi } from 'openai'
+import { CreateChatCompletionResponse } from 'openai'
 import { template } from '../utils'
 import { AxiosResponse } from 'axios'
-
-const router = express.Router()
-
-const configuration = new Configuration({
-  organization: process.env.OPENAI_ORGANIZATION,
-  apiKey: process.env.OPENAI_API_KEY,
-})
-
-const openai = new OpenAIApi(configuration)
-
-const system_prompt = 'you are a game master that follows dungeons and dragons d20 srd 5e rules'
+import { one_shot, top_choice } from 'src/ai'
 
 const description_prompt = template`
 imagine a fantasy world
@@ -46,34 +36,18 @@ ${'description'}
 World summary:
 `
 
-async function oneshot(prompt: string, temperature = 0.75) {
-  return await openai.createChatCompletion({
-    messages: [
-      {role: 'system', content: system_prompt},
-      {role: 'user', content: prompt}
-    ], 
-    model: 'gpt-3.5-turbo',
-    temperature
-  })  
-}
-
-function top(response: AxiosResponse<CreateChatCompletionResponse, any>) {
-  if(!response.data.choices.length) throw '!choices'
-  const content = response.data.choices[0].message?.content
-  if(!content) throw '!content'
-  return content
-}
+const router = express.Router()
 
 router.post('/', async function(req, res, next) {
   const userPrompt = req.body['userPrompt']
 
-  const descriptionResponse = await oneshot(description_prompt({userPrompt}))
+  const descriptionResponse = await one_shot(description_prompt({userPrompt}))
   console.log('/world description prompt', descriptionResponse.data.usage)
-  const description = top(descriptionResponse as AxiosResponse<CreateChatCompletionResponse, any>)
+  const description = top_choice(descriptionResponse as AxiosResponse<CreateChatCompletionResponse, any>)
 
-  const summaryResponse = await oneshot(summary_prompt({userPrompt, description}))
+  const summaryResponse = await one_shot(summary_prompt({userPrompt, description}))
   console.log('/world summary prompt', summaryResponse.data.usage)
-  const summary = top(summaryResponse as AxiosResponse<CreateChatCompletionResponse, any>)
+  const summary = top_choice(summaryResponse as AxiosResponse<CreateChatCompletionResponse, any>)
 
   res.status(200).send({ description, summary })
 })

@@ -39,9 +39,11 @@ export default function Input(
     step={step}
     className={`
     px-4 py-2 
-    text-2xl text-purple-700
-    disabled:text-gray-400 disabled:dark:text-gray-600
-    bg-gray-200 dark:bg-gray-300 focus:dark:bg-white
+    text-xl text-zinc-200
+    disabled:text-gray-400 disabled:text-gray-600
+    bg-zinc-950 border-zinc-900 
+    hover:border-red-500
+    focus:text-red-700 focus:border-red-700
     rounded-lg focus:ring-0
     ${className}`}>
     {children}

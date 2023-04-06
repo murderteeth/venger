@@ -28,14 +28,14 @@ function emberfield(canvas: HTMLCanvasElement) {
   return result
 }
 
-export default function Embers({ className }: { className?: string }) {
+export default function Embers({ disabled, className }: { disabled?: boolean, className?: string }) {
   const canvas = React.createRef<HTMLCanvasElement>()
 
   useEffect(() => {
-    if(!canvas.current) return
+    if(disabled || !canvas.current) return
 
     const emberList = emberfield(canvas.current)
-    const frameDelay = 64
+    const frameDelay = 32
     const ctx = canvas.current?.getContext('2d')
     ctx?.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 
@@ -78,7 +78,7 @@ export default function Embers({ className }: { className?: string }) {
       clearTimeout(timeout)
     }
 
-  }, [canvas])
+  }, [disabled, canvas])
 
   return <canvas 
     ref={canvas} 
