@@ -2,7 +2,7 @@ import express from 'express'
 import { CreateChatCompletionResponse } from 'openai'
 import { template } from '../utils'
 import { AxiosResponse } from 'axios'
-import { one_shot, top_choice } from 'src/ai'
+import { one_shot, to_object, top_choice } from '../ai'
 
 const description_prompt = template`
 create me a level 1 dungeons and dragons character using the dungeons and dragons d20 srd 5e rules. 
@@ -56,12 +56,61 @@ ${'description'}
 Character summary:
 `
 
+const to_character_sheet_prompt = `
+The output should be formatted as a JSON instance that conforms to the JSON schema below.
+
+As an example, for the schema {"properties": {"foo": {"title": "Foo", "description": "a list of strings", "type": "array", "items": {"type": "string"}}}, "required": ["foo"]}}
+the object {"foo": ["bar", "baz"]} is a well-formatted instance of the schema. The object {"properties": {"foo": ["bar", "baz"]}} is not well-formatted.
+
+Here is the output schema:
+\`\`\`
+{
+  "properties": 
+  {
+    "name": {"title": "Name", "type": "string"}, 
+    "age": {"title": "Age", "type": "integer"}, 
+    "gender": {"title": "Gender", "type": "string"}, 
+    "alignment": {"title": "Alignment", "type": "string"}, 
+    "character_class": {"title": "Character Class", "type": "string"}, 
+    "race": {"title": "Race", "type": "string"}, 
+    "attributes": {"title": "Attributes", "type": "object"},
+    "skill_modifiers": {"title": "Skill Modifiers", "type": "object"},
+    "max_hitpoints": {"title": "Max Hitpoints", "type": "integer"}, 
+    "hitpoints": {"title": "Hitpoints", "type": "integer"}, 
+    "experience_points": {"title": "Experience Points", "type": "integer"}, 
+    "gold": {"title": "Gold", "type": "integer"}, 
+    "inventory": {"title": "Inventory", "type": "array", "items": {"type": "string"}}, 
+    "backstory": {"title": "Backstory", "type": "string"}, 
+    "summary": {"title": "Summary", "type": "string"}
+  }, 
+  "required": [
+    "name", 
+    "age", 
+    "gender", 
+    "alignment", 
+    "character_class", 
+    "race", 
+    "attributes", 
+    "skill_modifiers", 
+    "max_hitpoints", 
+    "hitpoints", 
+    "experience_points", 
+    "gold", 
+    "inventory", 
+    "backstory", 
+    "summary"
+  ]
+}
+\`\`\`
+`
+
 const router = express.Router()
 
 router.post('/', async function(req, res, next) {
   const userPrompt = req.body['userPrompt']
+  const world = req.body['world']
 
-  const descriptionResponse = await one_shot(description_prompt({userPrompt}))
+  const descriptionResponse = await one_shot(description_prompt({world, userPrompt}), .6)
   console.log('/api/character description prompt', descriptionResponse.data.usage)
   const description = top_choice(descriptionResponse as AxiosResponse<CreateChatCompletionResponse, any>)
 
@@ -69,7 +118,10 @@ router.post('/', async function(req, res, next) {
   console.log('/api/character summary prompt', summaryResponse.data.usage)
   const summary = top_choice(summaryResponse as AxiosResponse<CreateChatCompletionResponse, any>)
 
-  res.status(200).send({ description, summary })
+  const source = `${description}\n\nsummary: ${summary}`
+  const characterSheet = await to_object(source, to_character_sheet_prompt)
+
+  res.status(200).send({...characterSheet})
 })
 
 export default router

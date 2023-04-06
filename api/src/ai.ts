@@ -15,7 +15,7 @@ const rewrite_prompt = template`
 rewrite this text:
 ${'source'}
 
-${'output_format'}
+${'output_prompt'}
 `
 
 export async function one_shot(prompt: string, temperature = 0.4) {
@@ -36,9 +36,9 @@ export function top_choice(response: AxiosResponse<CreateChatCompletionResponse,
   return content
 }
 
-export async function to_object<T>(source: string) {
-  const output_format = ''
-  const rewriteResponse = await one_shot(rewrite_prompt({source, output_format})) as AxiosResponse<CreateChatCompletionResponse, any>
+export async function to_object(source: string, output_prompt: string) {
+  const rewriteResponse = await one_shot(rewrite_prompt({source, output_prompt}), .1) as AxiosResponse<CreateChatCompletionResponse, any>
+  console.log('/api.. rewrite prompt', rewriteResponse.data.usage)
   const rewrite = top_choice(rewriteResponse)
-  return JSON.parse(rewrite) as T
+  return JSON.parse(rewrite)
 }

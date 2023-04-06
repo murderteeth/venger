@@ -2,7 +2,7 @@ import express from 'express'
 import { CreateChatCompletionResponse } from 'openai'
 import { template } from '../utils'
 import { AxiosResponse } from 'axios'
-import { one_shot, top_choice } from 'src/ai'
+import { one_shot, top_choice } from '../ai'
 
 const description_prompt = template`
 imagine a fantasy world
@@ -41,7 +41,7 @@ const router = express.Router()
 router.post('/', async function(req, res, next) {
   const userPrompt = req.body['userPrompt']
 
-  const descriptionResponse = await one_shot(description_prompt({userPrompt}))
+  const descriptionResponse = await one_shot(description_prompt({userPrompt}), .7)
   console.log('/world description prompt', descriptionResponse.data.usage)
   const description = top_choice(descriptionResponse as AxiosResponse<CreateChatCompletionResponse, any>)
 
