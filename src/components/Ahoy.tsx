@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useRef } from 'react'
+import React, { ReactNode, useCallback, useEffect, useRef } from 'react'
 import useKeypress from 'react-use-keypress'
 import Embers from './Embers'
 import { Button, Input } from './controls'
@@ -8,6 +8,7 @@ import { TbMenu, TbFlame } from 'react-icons/tb'
 import { Character, Turn, World, fetchCharacter, fetchEncounterStart, fetchWorld } from '../api'
 import Player from './Player'
 import Messenger, { MessageGram } from './Messenger'
+import { useMessages } from '../hooks/useMessages'
 
 const defaultMessages = [{
   role: 'assistant', content: 'Hail!'
@@ -30,8 +31,21 @@ export default function Ahoy() {
   const [world, setWorld] = useLocalStorage<World|undefined>('world', undefined)
   const [player, setPlayer] = useLocalStorage<Character|undefined>('player', undefined)
   const [turn, setTurn] = useLocalStorage<Turn|undefined>('turn', undefined)
-  const [messages, setMessages] = useLocalStorage<MessageGram[]>('messages', defaultMessages)
+  const {messages, setMessages} = useMessages()
   const prompter = useRef<HTMLInputElement>(null)
+
+  const hail = useCallback(() => {
+    setMessages([{
+      role: 'assistant', content: 'Hail!'
+    }, {
+      role: 'assistant', content: `I'm Venger, your game master. Let's create a world to play in, okie!?`
+    }])
+  }, [setMessages])
+
+  useEffect(() => {
+    if(messages.length === 0) return hail()
+    
+  }, [messages, world, player, hail])
 
   const onGo = useCallback(async () => {
     setBusy(true)
@@ -62,7 +76,7 @@ export default function Ahoy() {
   }, [setBusy, setMessages, world, setWorld, player, setPlayer, setTurn])
 
   const onReset = useCallback(() => {
-    setMessages(defaultMessages)
+    setMessages([])
     setWorld(undefined)
     setPlayer(undefined)
     setTurn(undefined)
@@ -98,8 +112,7 @@ export default function Ahoy() {
       </Panel>
 
       <div className={`w-[40%] h-full py-4 flex flex-col items-center justify-between gap-4`}>
-        <Messenger messages={messages} />
-
+        <Messenger />
         <div className={'relative w-full px-6 py-4 flex items-center gap-4'}>
           <Input _ref={prompter} type={'text'} disabled={busy} className={'grow'} />
           <Button onClick={onGo} disabled={busy} className={'h-full'}>

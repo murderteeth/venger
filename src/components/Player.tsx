@@ -5,19 +5,19 @@ import Tabbed from './controls/Tabbed'
 
 function Attributes({player}: {player: Character}) {
   return <div>
-    <Row label={'Strength'}>{player.attributes.Strength}</Row>
-    <Row label={'Dexterity'} alt={true}>{player.attributes.Dexterity}</Row>
-    <Row label={'Constitution'}>{player.attributes.Constitution}</Row>
-    <Row label={'Inteligence'} alt={true}>{player.attributes.Intelligence}</Row>
-    <Row label={'Wisdom'}>{player.attributes.Wisdom}</Row>
-    <Row label={'Charisma'} alt={true}>{player.attributes.Charisma}</Row>
+    <Row label={'Strength'}>{player.attributes.strength}</Row>
+    <Row label={'Dexterity'} alt={true}>{player.attributes.dexterity}</Row>
+    <Row label={'Constitution'}>{player.attributes.constitution}</Row>
+    <Row label={'Inteligence'} alt={true}>{player.attributes.intelligence}</Row>
+    <Row label={'Wisdom'}>{player.attributes.wisdom}</Row>
+    <Row label={'Charisma'} alt={true}>{player.attributes.charisma}</Row>
   </div>
 }
 
 function Skills({player}: {player: Character}) {
   return <div>
-    {Object.keys(player.skill_modifiers).map((skill, index) => 
-      <Row key={index} label={skill} alt={Boolean(index % 2)}>{`+${player.skill_modifiers[skill]}`}</Row>
+    {player.skills.map((skill, index) => 
+      <Row key={index} label={skill.name} alt={Boolean(index % 2)}>{`+${skill.modifier}`}</Row>
     )}
   </div>
 }
@@ -25,7 +25,7 @@ function Skills({player}: {player: Character}) {
 function Inventory({player}: {player: Character}) {
   return <div>
     {player.inventory.map((item, index) => 
-      <Row key={index} label={item} alt={Boolean(index % 2)}>{}</Row>
+      <Row key={index} label={item.item} alt={Boolean(index % 2)}>{item.count}</Row>
     )}
   </div>
 }
@@ -57,7 +57,6 @@ export default function Player({player}: {player: Character}) {
       {label: 'Inventory', content: <Inventory player={player} />},
       {label: 'Backstory', content: <Backstory player={player} />}
     ]} />} alt={true} heading={true}></Row>
-
 
   </div>
 }

@@ -19,6 +19,15 @@ ${'output_prompt'}
 `
 
 export async function one_shot(prompt: string, temperature = 0.4) {
+  if(process.env.NODE_ENV === 'development') {
+    console.log()
+    console.log('prompt/ ---------------')
+    console.log(`system: ${system_prompt}`)
+    console.log(prompt)
+    console.log('prompt/ ---------------')
+    console.log()
+  }
+
   return await openai.createChatCompletion({
     messages: [
       {role: 'system', content: system_prompt},

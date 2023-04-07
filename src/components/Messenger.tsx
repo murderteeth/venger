@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import AssistantMessage from './AssistantMessage'
+import { useMessages } from '../hooks/useMessages'
 
 export interface MessageGram {
   role: 'system' | 'user' | 'assistant',
@@ -7,7 +8,14 @@ export interface MessageGram {
   content: string | string[],
 }
 
-export default function Messenger({messages}: {messages: MessageGram[]}) {
+export default function Messenger() {
+  const {messages} = useMessages()
+  const eom = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    eom.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages])
+
   return <div className={'w-full h-full grow px-6 flex flex-col gap-4 overflow-y-auto'}>
     <div className={'mt-auto'}></div>
     {messages.map((message, index) => {
@@ -23,13 +31,14 @@ export default function Messenger({messages}: {messages: MessageGram[]}) {
       } else {
         const showAvatar = index === messages.length - 1 || messages[index + 1].role !== 'user'
         const avatar = showAvatar 
-          ? <div className={'w-[32px] h-[32px] flex items-center justify-center rounded-full border border-zinc-900'}>{'🔥'}</div>
+          ? <div className={'w-[32px] h-[32px] flex items-center justify-center rounded-full bg-zinc-900'}>{'🔥'}</div>
           : <div className={'w-[32px]'}></div>
-        return <div key={index} className={'flex flex-row-reverse items-end gap-4'}>
+        return <div key={index} className={'self-end flex flex-row-reverse items-end gap-4'}>
           {avatar}
-          {message.content}
+          <div className={'w-96 p-3 bg-zinc-900'}>{message.content}</div>
         </div>
       }
     })}
+    <div ref={eom}></div>
   </div>
 }

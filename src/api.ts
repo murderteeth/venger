@@ -3,8 +3,14 @@ export interface World {
   summary: string
 }
 
-export interface SkillModifiers {
-  [key: string]: number;
+export interface Skill {
+  name: string,
+  modifier: number
+}
+
+export interface InventoryItem {
+  item: string,
+  count: number
 }
 
 export interface Character {
@@ -15,19 +21,18 @@ export interface Character {
   character_class: string,
   race: string,
   attributes: {
-    Strength: number,
-    Dexterity: number,
-    Constitution: number,
-    Intelligence: number,
-    Wisdom: number,
-    Charisma: number
+    strength: number,
+    dexterity: number,
+    constitution: number,
+    intelligence: number,
+    wisdom: number,
+    charisma: number
   },
-  skill_modifiers: SkillModifiers,
+  skills: Skill[],
   max_hitpoints: number,
   hitpoints: number,
   experience_points: number,
-  gold: number,
-  inventory: string[],
+  inventory: InventoryItem[],
   backstory: string,
   summary: string
 }

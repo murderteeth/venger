@@ -5,7 +5,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node -r dotenv/config ./src/app dotenv_config_path=../.env",
+    "start": "export NODE_ENV=development && ts-node -r dotenv/config ./src/app dotenv_config_path=../.env",
     "build": "tsc",
     "serve": "node -r dotenv/config ./dist/app dotenv_config_path=../.env"
   },
