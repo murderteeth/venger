@@ -1,3 +1,5 @@
+import { MessageGram } from "./components/Messenger"
+
 export interface World {
   description: string,
   summary: string
@@ -64,7 +66,35 @@ export async function fetchEncounterStart(world: World, character: Character) {
   const response = await fetch('/api/encounter/start', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({world: world.summary, character: JSON.stringify(character)})
+    body: JSON.stringify({world: world.description, character: JSON.stringify(character)})
   })
+  return await response.json() as Turn
+}
+
+export async function fetchAction(prompt: string, world: World, character: Character, buffer: MessageGram[]) {
+  buffer = JSON.parse(JSON.stringify([...buffer]))
+  for(let i = 0; i < buffer.length; i++) {
+    if(buffer[i].contentType === 'options') {
+      const options = buffer[i].content as string[]
+      buffer[i - 1].content = `${buffer[i - 1].content} {options: ["${options.join('", "')}"]}`
+    }
+  }
+  buffer = buffer.filter(message => message.contentType !== 'options')
+
+  if(buffer[buffer.length - 1].role !== 'user') {
+    buffer.push({role: 'user', content: prompt})
+  }
+
+  const response = await fetch('/api/action', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      userPrompt: prompt, 
+      world: world.summary,
+      character: JSON.stringify(character),
+      buffer: JSON.stringify(buffer)
+    })
+  })
+
   return await response.json() as Turn
 }

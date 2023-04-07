@@ -5,7 +5,7 @@ import { Button, Input } from './controls'
 import { useBusy } from './Busy'
 import { useLocalStorage } from 'usehooks-ts'
 import { TbMenu, TbFlame } from 'react-icons/tb'
-import { Character, Turn, World, fetchCharacter, fetchEncounterStart, fetchWorld } from '../api'
+import { Character, Turn, World, fetchAction, fetchCharacter, fetchEncounterStart, fetchWorld } from '../api'
 import Player from './Player'
 import Messenger from './Messenger'
 import { useMessages } from '../hooks/useMessages'
@@ -30,8 +30,9 @@ export default function Ahoy() {
   const promptType = useMemo(() => {
     if(!world) return 'world'
     if(!player) return 'player'
-    return 'encounter'
-  }, [world, player])
+    if (!turn) return 'start'
+    return 'action'
+  }, [world, player, turn])
 
   const focusPrompter = useCallback(() => {
     setTimeout(() => prompter.current?.focus(), 0)
@@ -67,9 +68,7 @@ export default function Ahoy() {
 
   const playerPrompt = usePromptCallback(async (userPrompt: string) => {
     if(!world) return
-    setMessages(current => {
-      return [...current, {role: 'assistant', contentType: 'busy'}]
-    })
+    setMessages(current => [...current, {role: 'assistant', contentType: 'busy'}])
     const result = await fetchCharacter(userPrompt, world)
     setMessages(current => {
       return [...current.slice(0, -1), {role: 'assistant', content: result.summary}]
@@ -79,9 +78,7 @@ export default function Ahoy() {
 
   const encounterPrompt = usePromptCallback(async (userPrompt: string) => {
     if(!(world && player)) return
-    setMessages(current => {
-      return [...current, {role: 'assistant', contentType: 'busy'}]
-    })
+    setMessages(current => [...current, {role: 'assistant', contentType: 'busy'}])
     const result = await fetchEncounterStart(world, player)
     setMessages(current => {
       return [
@@ -93,6 +90,29 @@ export default function Ahoy() {
     setTurn(result)
   }, [world, player, setTurn, setMessages])
 
+  const actionPrompt = usePromptCallback(async (userPrompt: string) => {
+    if(!(world && player && turn)) return
+    const buffer = [...messages]
+    setMessages(current => [...current, {role: 'assistant', contentType: 'busy'}])
+    const result = await fetchAction(userPrompt, world, player, buffer)
+    setMessages(current => {
+      if(result.options.length > 0) {
+        return [
+          ...current.slice(0, -1), 
+          {role: 'assistant', content: result.description},
+          {role: 'assistant', contentType: 'options', content: result.options}
+        ]
+      } else {
+        return [
+          ...current.slice(0, -1), 
+          {role: 'assistant', content: result.description},
+          {role: 'assistant', content: 'What do you want to do next?'}
+        ]
+      }
+    })
+    setTurn(result)
+  }, [world, player, turn, setTurn, messages, setMessages])
+
   const onPrompt = useCallback(async () => {
     if(!prompter.current) return
     const userPrompt = prompter.current?.value || '...'
@@ -103,9 +123,10 @@ export default function Ahoy() {
     })
     if(promptType === 'world') worldPrompt(userPrompt)
     if(promptType === 'player') playerPrompt(userPrompt)
-    if(promptType === 'encounter') encounterPrompt(userPrompt)
+    if(promptType === 'start') encounterPrompt(userPrompt)
+    if(promptType === 'action') actionPrompt(userPrompt)
     prompter.current.value = ''
-  }, [prompter, setMessages, promptType, worldPrompt, playerPrompt, encounterPrompt])
+  }, [prompter, setMessages, promptType, worldPrompt, playerPrompt, encounterPrompt, actionPrompt])
 
   const onReset = useCallback(() => {
     resetMessages()
@@ -132,11 +153,11 @@ export default function Ahoy() {
       <div className={`w-[40%] h-full pb-4 flex flex-col items-center justify-between gap-4`}>
         <Messenger />
         <div className={'relative w-full px-6 py-4 flex items-center gap-4'}>
-          <div className={`absolute left-8 w-24 px-2 py-1 text-sm 
+          <div className={`absolute left-8 w-22 px-2 py-1 text-sm 
             ${busy ? 'text-zinc-900 bg-zinc-950' : 'text-red-800 bg-zinc-900'}`}>
             {`/${promptType}:`}
           </div>
-          <Input _ref={prompter} type={'text'} disabled={busy} className={'grow pl-28'} />
+          <Input _ref={prompter} type={'text'} disabled={busy} className={'grow pl-24'} />
           <Button onClick={onPrompt} disabled={busy} className={'h-full'}>
             <TbFlame size={24} />
           </Button>

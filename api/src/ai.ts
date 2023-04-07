@@ -1,4 +1,4 @@
-import { Configuration, CreateChatCompletionResponse, OpenAIApi } from 'openai'
+import { ChatCompletionRequestMessage, Configuration, CreateChatCompletionResponse, OpenAIApi } from 'openai'
 import { AxiosResponse } from 'axios'
 import { template } from './utils'
 
@@ -10,14 +10,6 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration)
 
 const system_prompt = 'you are a game master that follows dungeons and dragons d20 srd 5e rules'
-
-const rewrite_prompt = template`
-rewrite this text:
-${'source'}
-
-${'output_prompt'}
-`
-
 export async function one_shot(prompt: string, temperature = 0.4) {
   if(process.env.NODE_ENV === 'development') {
     console.log()
@@ -38,6 +30,24 @@ export async function one_shot(prompt: string, temperature = 0.4) {
   })  
 }
 
+export async function multi_shot(messages: ChatCompletionRequestMessage[], temperature = 0.4) {
+  if(process.env.NODE_ENV === 'development') {
+    console.log()
+    console.log('prompt/ ---------------')
+    messages.forEach(message => {
+      console.log(`${message.role}: ${message.content}`)
+    })
+    console.log('prompt/ ---------------')
+    console.log()
+  }
+
+  return await openai.createChatCompletion({
+    messages,
+    model: 'gpt-3.5-turbo',
+    temperature
+  })  
+}
+
 export function top_choice(response: AxiosResponse<CreateChatCompletionResponse, any>) {
   if(!response.data.choices.length) throw '!choices'
   const content = response.data.choices[0].message?.content
@@ -45,6 +55,12 @@ export function top_choice(response: AxiosResponse<CreateChatCompletionResponse,
   return content
 }
 
+const rewrite_prompt = template`
+rewrite this text:
+${'source'}
+
+${'output_prompt'}
+`
 export async function to_object(source: string, output_prompt: string) {
   const rewriteResponse = await one_shot(rewrite_prompt({source, output_prompt}), .1) as AxiosResponse<CreateChatCompletionResponse, any>
   console.log('/api.. rewrite prompt', rewriteResponse.data.usage)

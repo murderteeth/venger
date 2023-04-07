@@ -18,7 +18,6 @@ ${'character'}
 - each option must make sense given the current situation
 - if the character has no spells, do not offer options involving spells
 - each option should be less than 4 words
-- add one more option called 'Improvise'
 
 rewrite your response in this JSON format:
 {
@@ -34,7 +33,7 @@ router.post('/start', async function(req, res, next) {
   const character = req.body['character']
 
   const startResponse = await one_shot(start_prompt({world, character}), .75)
-  console.log('/api/encounter start prompt', startResponse.data.usage)
+  console.log('/api/start prompt', startResponse.data.usage)
   const json = top_choice(startResponse as AxiosResponse<CreateChatCompletionResponse, any>)
 
   res.status(200).send({...JSON.parse(json)})

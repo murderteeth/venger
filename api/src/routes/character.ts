@@ -60,7 +60,7 @@ const router = express.Router()
 router.post('/', async function(req, res, next) {
   const userPrompt = req.body['userPrompt']
   const world = req.body['world']
-  const characterResponse = await one_shot(character_prompt({world, userPrompt}), .6)
+  const characterResponse = await one_shot(character_prompt({world, userPrompt}), .8)
   console.log('/character prompt', characterResponse.data.usage)
   const character = top_choice(characterResponse as AxiosResponse<CreateChatCompletionResponse, any>)
   res.status(200).send({...JSON.parse(character)})
