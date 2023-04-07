@@ -24,7 +24,7 @@ export default function BusyProvider({ children } : { children: ReactNode }) {
   const [busy, setBusy] = useState(false)
   return <BusyContext.Provider value={{ busy, setBusy }}>
     <div className={'absolute top-0 left-0 w-full pointer-events-none'}>
-      {busy && <TopBarProgress  />}
+      {/* {busy && <TopBarProgress  />} */}
     </div>
     {children}
   </BusyContext.Provider>

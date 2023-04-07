@@ -1,7 +1,9 @@
 import React, { useCallback, useMemo } from 'react'
+import colors from 'tailwindcss/colors'
 import { MessageGram } from '../Messenger'
 import { Button } from '../controls'
 import { useMessages } from '../../hooks/useMessages'
+import { PacmanLoader } from 'react-spinners'
 
 export default function AssistantMessage({message}: {message: MessageGram}) {
   const {setMessages} = useMessages()
@@ -19,5 +21,6 @@ export default function AssistantMessage({message}: {message: MessageGram}) {
     {contentType === 'options' && (message.content as string[]).map((option, index) => {
       return <Button key={index} onClick={() => onOption(option)}>{option}</Button>
     })}
+    {contentType === 'busy' && <PacmanLoader size={16} color={colors.red[500]} />}
   </div>
 }

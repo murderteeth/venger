@@ -2,11 +2,26 @@ import React, { useEffect, useRef } from 'react'
 import AssistantMessage from './AssistantMessage'
 import { useMessages } from '../hooks/useMessages'
 
-export interface MessageGram {
-  role: 'system' | 'user' | 'assistant',
-  contentType?: 'text' | 'options',
-  content: string | string[],
+type RoleContentTypeMapping = {
+  user: 'text',
+  assistant: 'text' | 'options' | 'busy',
 }
+
+type ContentMapping = {
+  text: string,
+  options: string[],
+  busy: undefined,
+}
+
+export type MessageGram = {
+  role: keyof RoleContentTypeMapping,
+} & {
+  [R in keyof RoleContentTypeMapping]: {
+    [K in RoleContentTypeMapping[R]]: K extends keyof ContentMapping
+      ? { contentType?: K; content?: ContentMapping[K] }
+      : never
+  }[RoleContentTypeMapping[R]]
+}[keyof RoleContentTypeMapping]
 
 export default function Messenger() {
   const {messages} = useMessages()
@@ -16,7 +31,9 @@ export default function Messenger() {
     eom.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  return <div className={'w-full h-full grow px-6 flex flex-col gap-4 overflow-y-auto'}>
+  return <div className={`
+    w-full h-full grow px-6 flex flex-col gap-4 overflow-y-auto
+    scrollbar-thin scrollbar-thumb-red-950 scrollbar-track-zinc-950`}>
     <div className={'mt-auto'}></div>
     {messages.map((message, index) => {
       if(message.role === 'assistant') {
@@ -39,6 +56,6 @@ export default function Messenger() {
         </div>
       }
     })}
-    <div ref={eom}></div>
+    <div ref={eom} className={'mb-12'}></div>
   </div>
 }

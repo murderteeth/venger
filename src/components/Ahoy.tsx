@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useEffect, useRef } from 'react'
+import React, { ReactNode, useCallback, useEffect, useMemo, useRef } from 'react'
 import useKeypress from 'react-use-keypress'
 import Embers from './Embers'
 import { Button, Input } from './controls'
@@ -7,15 +7,8 @@ import { useLocalStorage } from 'usehooks-ts'
 import { TbMenu, TbFlame } from 'react-icons/tb'
 import { Character, Turn, World, fetchCharacter, fetchEncounterStart, fetchWorld } from '../api'
 import Player from './Player'
-import Messenger, { MessageGram } from './Messenger'
+import Messenger from './Messenger'
 import { useMessages } from '../hooks/useMessages'
-
-const defaultMessages = [{
-  role: 'assistant', content: 'Hail!'
-}, {
-  role: 'assistant', content: `I'm Venger, your game master. Let's create a world to play in, okie!?`
-}
-] as MessageGram[]
 
 function Panel({className, children}: {className?: string, children?: ReactNode}) {
   return <div className={`
@@ -31,73 +24,98 @@ export default function Ahoy() {
   const [world, setWorld] = useLocalStorage<World|undefined>('world', undefined)
   const [player, setPlayer] = useLocalStorage<Character|undefined>('player', undefined)
   const [turn, setTurn] = useLocalStorage<Turn|undefined>('turn', undefined)
-  const {messages, setMessages} = useMessages()
+  const {messages, setMessages, resetMessages} = useMessages()
   const prompter = useRef<HTMLInputElement>(null)
 
-  const hail = useCallback(() => {
+  const promptType = useMemo(() => {
+    if(!world) return 'world'
+    if(!player) return 'player'
+    return 'encounter'
+  }, [world, player])
+
+  const focusPrompter = useCallback(() => {
+    setTimeout(() => prompter.current?.focus(), 0)
+  }, [prompter])
+
+  useEffect(() => {
+    if(messages.length > 0) return
     setMessages([{
       role: 'assistant', content: 'Hail!'
     }, {
       role: 'assistant', content: `I'm Venger, your game master. Let's create a world to play in, okie!?`
     }])
-  }, [setMessages])
+  }, [messages, setMessages])
 
-  useEffect(() => {
-    if(messages.length === 0) return hail()
-    
-  }, [messages, world, player, hail])
-
-  const onGo = useCallback(async () => {
+  const usePromptCallback = (prompt: (userPrompt: string) => Promise<void>, deps: any[]) => 
+    useCallback(async (userPrompt: string) => {
     setBusy(true)
-    if(!world) {
-      const newWorld = await fetchWorld('')
-      setWorld(newWorld)
-      setMessages(current => {
-        return [...current, {role: 'assistant', content: newWorld.summary}]
-      })
-    } else if(!player) {
-      const newCharacter = await fetchCharacter('', world)
-      setPlayer(newCharacter)
-      setMessages(current => {
-        return [...current, {role: 'assistant', content: newCharacter.summary}]
-      })
-    } else {
-      const nextTurn = await fetchEncounterStart(world, player)
-      setTurn(nextTurn)
-      setMessages(current => {
-        return [
-          ...current, 
-          {role: 'assistant', content: nextTurn.description},
-          {role: 'assistant', contentType: 'options', content: nextTurn.options}
-        ]
-      })
-    }
+    await prompt(userPrompt)
     setBusy(false)
-  }, [setBusy, setMessages, world, setWorld, player, setPlayer, setTurn])
+    focusPrompter()
+  }, [prompt, ...deps])
+
+  const worldPrompt = usePromptCallback(async (userPrompt: string) => {
+    setMessages(current => {
+      return [...current, {role: 'assistant', contentType: 'busy'}]
+    })
+    const result = await fetchWorld(userPrompt)
+    setMessages(current => {
+      return [...current.slice(0, -1), {role: 'assistant', content: result.summary}]
+    })
+    setWorld(result)
+  }, [setWorld, setMessages])
+
+  const playerPrompt = usePromptCallback(async (userPrompt: string) => {
+    if(!world) return
+    setMessages(current => {
+      return [...current, {role: 'assistant', contentType: 'busy'}]
+    })
+    const result = await fetchCharacter(userPrompt, world)
+    setMessages(current => {
+      return [...current.slice(0, -1), {role: 'assistant', content: result.summary}]
+    })
+    setPlayer(result)
+  }, [world, setPlayer, setMessages])
+
+  const encounterPrompt = usePromptCallback(async (userPrompt: string) => {
+    if(!(world && player)) return
+    setMessages(current => {
+      return [...current, {role: 'assistant', contentType: 'busy'}]
+    })
+    const result = await fetchEncounterStart(world, player)
+    setMessages(current => {
+      return [
+        ...current.slice(0, -1), 
+        {role: 'assistant', content: result.description},
+        {role: 'assistant', contentType: 'options', content: result.options}
+      ]
+    })
+    setTurn(result)
+  }, [world, player, setTurn, setMessages])
+
+  const onPrompt = useCallback(async () => {
+    if(!prompter.current) return
+    const userPrompt = prompter.current?.value || '...'
+    setMessages(current => {
+      return [...current, 
+        {role: 'user', content: userPrompt}
+      ]
+    })
+    if(promptType === 'world') worldPrompt(userPrompt)
+    if(promptType === 'player') playerPrompt(userPrompt)
+    if(promptType === 'encounter') encounterPrompt(userPrompt)
+    prompter.current.value = ''
+  }, [prompter, setMessages, promptType, worldPrompt, playerPrompt, encounterPrompt])
 
   const onReset = useCallback(() => {
-    setMessages([])
+    resetMessages()
     setWorld(undefined)
     setPlayer(undefined)
     setTurn(undefined)
-  }, [setMessages, setWorld, setPlayer, setTurn])
+  }, [resetMessages, setWorld, setPlayer, setTurn])
 
-  useKeypress(['/'], () => {
-    setTimeout(() => { prompter.current?.focus() }, 0)
-  })
-
+  useKeypress(['/'], () => focusPrompter())
   useKeypress(['Enter'], () => onPrompt())
-
-  const onPrompt = useCallback(async () => {
-    if(!prompter.current?.value) return
-    setMessages(current => {
-      return [
-        ...current, 
-        {role: 'user', content: prompter.current?.value as string}
-      ]
-    })
-    prompter.current.value = ''
-  }, [prompter, setMessages])
 
   return <div className={`relative w-full h-full bg-black font-mono`}>
     <Embers disabled={false} className={'absolute z-1 inset-0'} />
@@ -111,11 +129,15 @@ export default function Ahoy() {
         {player && <Player player={player} />}
       </Panel>
 
-      <div className={`w-[40%] h-full py-4 flex flex-col items-center justify-between gap-4`}>
+      <div className={`w-[40%] h-full pb-4 flex flex-col items-center justify-between gap-4`}>
         <Messenger />
         <div className={'relative w-full px-6 py-4 flex items-center gap-4'}>
-          <Input _ref={prompter} type={'text'} disabled={busy} className={'grow'} />
-          <Button onClick={onGo} disabled={busy} className={'h-full'}>
+          <div className={`absolute left-8 w-24 px-2 py-1 text-sm 
+            ${busy ? 'text-zinc-900 bg-zinc-950' : 'text-red-800 bg-zinc-900'}`}>
+            {`/${promptType}:`}
+          </div>
+          <Input _ref={prompter} type={'text'} disabled={busy} className={'grow pl-28'} />
+          <Button onClick={onPrompt} disabled={busy} className={'h-full'}>
             <TbFlame size={24} />
           </Button>
         </div>

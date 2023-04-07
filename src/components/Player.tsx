@@ -17,7 +17,7 @@ function Attributes({player}: {player: Character}) {
 function Skills({player}: {player: Character}) {
   return <div>
     {player.skills.map((skill, index) => 
-      <Row key={index} label={skill.name} alt={Boolean(index % 2)}>{`+${skill.modifier}`}</Row>
+      <Row key={index} label={skill.name} alt={Boolean(index % 2)}>{`${skill.modifier > 0 ? '+' : ''}${skill.modifier}`}</Row>
     )}
   </div>
 }

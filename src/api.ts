@@ -64,7 +64,7 @@ export async function fetchEncounterStart(world: World, character: Character) {
   const response = await fetch('/api/encounter/start', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({world: world.summary, character})
+    body: JSON.stringify({world: world.summary, character: JSON.stringify(character)})
   })
   return await response.json() as Turn
 }

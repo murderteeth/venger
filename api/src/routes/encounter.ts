@@ -13,10 +13,12 @@ ${'character'}
 
 - create an easy encounter set in the world that tests my character's best attributes
 - describe the first scene of the encounter to me in less than four sentances
-- end your response with a short list of options on how I can proceed
+- end your response with a no more than 3 options for how my character can proceed
+- each option must make sense given my character's strengths and weaknesses
+- each option must make sense given the current situation
+- if the character has no spells, do not offer options involving spells
 - each option should be less than 4 words
-- only offer spell options if the character knows spells
-- the last options should be 'Improvise'
+- add one more option called 'Improvise'
 
 rewrite your response in this JSON format:
 {
