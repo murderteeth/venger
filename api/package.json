@@ -7,6 +7,7 @@
   "scripts": {
     "start": "export NODE_ENV=development && ts-node -r dotenv/config ./src/app dotenv_config_path=../.env",
     "build": "tsc",
+    "vercel-build": "tsc --outDir ./",
     "serve": "node -r dotenv/config ./dist/app dotenv_config_path=../.env"
   },
   "dependencies": {

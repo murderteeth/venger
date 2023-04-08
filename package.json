@@ -36,7 +36,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "vercel-install": "yarn install && cd api && yarn install",
-    "vercel-build": "react-scripts build && cd api && yarn build && rsync -av --include='*.js' --include='*/' --exclude='*' ./build/ ./"
+    "vercel-build": "react-scripts build && cd api && yarn vercel-build"
   },
   "eslintConfig": {
     "extends": [
