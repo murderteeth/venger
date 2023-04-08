@@ -8,7 +8,7 @@
     "start": "export NODE_ENV=development && ts-node -r dotenv/config ./src/app dotenv_config_path=../.env",
     "build": "tsc",
     "serve": "node -r dotenv/config ./dist/app dotenv_config_path=../.env",
-    "vercel-build": "tsc --outDir ./"
+    "prepare-vercel": "tsc --outDir ./"
   },
   "dependencies": {
     "@web-std/file": "^3.0.2",

@@ -34,9 +34,7 @@
     "start:app": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "vercel-install": "yarn install && cd api && yarn install",
-    "vercel-build": "react-scripts build && cd api && yarn vercel-build"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
