@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useEffect, useMemo, useRef } from 'react'
+import React, { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react'
 import useKeypress from 'react-use-keypress'
 import Embers from './Embers'
 import { Button, Input } from './controls'
@@ -19,13 +19,19 @@ function Panel({className, children}: {className?: string, children?: ReactNode}
   </div>
 }
 
+interface Prompter {
+  actionPrompt: (userPrompt: string) => Promise<void>
+}
+const	prompterContext = createContext({} as Prompter)
+export const usePrompter = () => useContext(prompterContext)
+
 export default function Ahoy() {
   const { busy, setBusy } = useBusy()
   const [world, setWorld] = useLocalStorage<World|undefined>('world', undefined)
   const [player, setPlayer] = useLocalStorage<Character|undefined>('player', undefined)
   const [turn, setTurn] = useLocalStorage<Turn|undefined>('turn', undefined)
   const {messages, setMessages, resetMessages} = useMessages()
-  const prompter = useRef<HTMLInputElement>(null)
+  const promptInput = useRef<HTMLInputElement>(null)
 
   const promptType = useMemo(() => {
     if(!world) return 'world'
@@ -35,8 +41,8 @@ export default function Ahoy() {
   }, [world, player, turn])
 
   const focusPrompter = useCallback(() => {
-    setTimeout(() => prompter.current?.focus(), 0)
-  }, [prompter])
+    setTimeout(() => promptInput.current?.focus(), 0)
+  }, [promptInput])
 
   useEffect(() => {
     if(messages.length > 0) return
@@ -114,8 +120,8 @@ export default function Ahoy() {
   }, [world, player, turn, setTurn, messages, setMessages])
 
   const onPrompt = useCallback(async () => {
-    if(!prompter.current) return
-    const userPrompt = prompter.current?.value || '...'
+    if(!promptInput.current) return
+    const userPrompt = promptInput.current?.value || '...'
     setMessages(current => {
       return [...current, 
         {role: 'user', content: userPrompt}
@@ -125,8 +131,8 @@ export default function Ahoy() {
     if(promptType === 'player') playerPrompt(userPrompt)
     if(promptType === 'start') encounterPrompt(userPrompt)
     if(promptType === 'action') actionPrompt(userPrompt)
-    prompter.current.value = ''
-  }, [prompter, setMessages, promptType, worldPrompt, playerPrompt, encounterPrompt, actionPrompt])
+    promptInput.current.value = ''
+  }, [promptInput, setMessages, promptType, worldPrompt, playerPrompt, encounterPrompt, actionPrompt])
 
   const onReset = useCallback(() => {
     resetMessages()
@@ -138,37 +144,39 @@ export default function Ahoy() {
   useKeypress(['/'], () => focusPrompter())
   useKeypress(['Enter'], () => onPrompt())
 
-  return <div className={`relative w-full h-full bg-black font-mono`}>
-    <Embers disabled={false} className={'absolute z-1 inset-0'} />
-    <div className={'absolute z-10 inset-0 flex items-center justify-center'}>
-      <Panel className={'w-[30%] h-full p-8 flex flex-col items-start justify-start gap-12'}>
-        <div>
-          <Button onClick={onReset} disabled={busy}>
-            <TbMenu size={24}></TbMenu>
-          </Button>
-        </div>
-        {player && <Player player={player} />}
-      </Panel>
-
-      <div className={`w-[40%] h-full pb-4 flex flex-col items-center justify-between gap-4`}>
-        <Messenger />
-        <div className={'relative w-full px-6 py-4 flex items-center gap-4'}>
-          <div className={`absolute left-8 w-22 px-2 py-1 text-sm 
-            ${busy ? 'text-zinc-900 bg-zinc-950' : 'text-red-800 bg-zinc-900'}`}>
-            {`/${promptType}:`}
+  return <prompterContext.Provider value={{actionPrompt}}>
+    <div className={`relative w-full h-full bg-black font-mono`}>
+      <Embers disabled={false} className={'absolute z-1 inset-0'} />
+      <div className={'absolute z-10 inset-0 flex items-center justify-center'}>
+        <Panel className={'w-[30%] h-full p-8 flex flex-col items-start justify-start gap-12'}>
+          <div>
+            <Button onClick={onReset} disabled={busy}>
+              <TbMenu size={24}></TbMenu>
+            </Button>
           </div>
-          <Input _ref={prompter} type={'text'} disabled={busy} className={'grow pl-24'} />
-          <Button onClick={onPrompt} disabled={busy} className={'h-full'}>
-            <TbFlame size={24} />
-          </Button>
-        </div>
-      </div>
+          {player && <Player player={player} />}
+        </Panel>
 
-      <Panel className={'relative w-[30%] h-full py-0 flex flex-col items-center justify-end'}>
-        <img src={'/images/venger.png'} alt={'venger'} className={'absolute z-1 bottom-0 scale-75 translate-y-[12%]'} />
-        <div className={'z-10 font-[LadyRadical] text-6xl text-red-600'}>{'Venger'}</div>
-        <div className={'z-10 text-red-700'}>{'rpg ai 0.1'}</div>
-      </Panel>
+        <div className={`w-[40%] h-full pb-4 flex flex-col items-center justify-between gap-4`}>
+          <Messenger />
+          <div className={'relative w-full px-6 py-4 flex items-center gap-4'}>
+            <div className={`absolute left-8 w-22 px-2 py-1 text-sm 
+              ${busy ? 'text-zinc-900 bg-zinc-950' : 'text-red-800 bg-zinc-900'}`}>
+              {`/${promptType}:`}
+            </div>
+            <Input _ref={promptInput} type={'text'} disabled={busy} className={'grow pl-24'} />
+            <Button onClick={onPrompt} disabled={busy} className={'h-full'}>
+              <TbFlame size={24} />
+            </Button>
+          </div>
+        </div>
+
+        <Panel className={'relative w-[30%] h-full py-0 flex flex-col items-center justify-end'}>
+          <img src={'/images/venger.png'} alt={'venger'} className={'absolute z-1 bottom-0 scale-75 translate-y-[12%]'} />
+          <div className={'z-10 font-[LadyRadical] text-6xl text-red-600'}>{'Venger'}</div>
+          <div className={'z-10 text-red-700'}>{'rpg ai 0.1'}</div>
+        </Panel>
+      </div>
     </div>
-  </div>
+  </prompterContext.Provider>
 }

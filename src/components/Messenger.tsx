@@ -28,7 +28,9 @@ export default function Messenger() {
   const eom = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    eom.current?.scrollIntoView({ behavior: "smooth" })
+    setTimeout(() => {
+      eom.current?.scrollIntoView({ behavior: "smooth" })
+    }, 100)
   }, [messages])
 
   return <div className={`
