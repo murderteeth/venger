@@ -2,7 +2,7 @@ import express from 'express'
 import { CreateChatCompletionResponse } from 'openai'
 import { template } from '../utils'
 import { AxiosResponse } from 'axios'
-import { one_shot, top_choice } from '../ai'
+import { moderated, one_shot, top_choice } from '../ai'
 
 const character_prompt = template`
 create me a level 1 dungeons and dragons character using the dungeons and dragons d20 srd 5e rules. 
@@ -59,6 +59,8 @@ const router = express.Router()
 
 router.post('/', async function(req, res, next) {
   const userPrompt = req.body['userPrompt']
+  if(await moderated(userPrompt)) throw `MODERATED: ${userPrompt}`
+
   const world = req.body['world']
   const characterResponse = await one_shot(character_prompt({world, userPrompt}), .8)
   console.log('/character prompt', characterResponse.data.usage)

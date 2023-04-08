@@ -2,7 +2,7 @@ import express from 'express'
 import { CreateChatCompletionResponse } from 'openai'
 import { template } from '../utils'
 import { AxiosResponse } from 'axios'
-import { one_shot, top_choice } from '../ai'
+import { moderated, one_shot, top_choice } from '../ai'
 
 const start_prompt = template`
 we are playing a game in this world:
@@ -29,6 +29,9 @@ rewrite your response in this JSON format:
 const router = express.Router()
 
 router.post('/start', async function(req, res, next) {
+  const userPrompt = req.body['userPrompt']
+  if(await moderated(userPrompt)) throw `MODERATED: ${userPrompt}`
+
   const world = req.body['world']
   const character = req.body['character']
 

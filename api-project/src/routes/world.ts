@@ -2,7 +2,7 @@ import express from 'express'
 import { CreateChatCompletionResponse } from 'openai'
 import { template } from '../utils'
 import { AxiosResponse } from 'axios'
-import { one_shot, top_choice } from '../ai'
+import { moderated, one_shot, top_choice } from '../ai'
 
 const world_prompt = template`
 imagine a fantasy world
@@ -22,6 +22,8 @@ const router = express.Router()
 
 router.post('/', async function(req, res, next) {
   const userPrompt = req.body['userPrompt']
+  if(await moderated(userPrompt)) throw `MODERATED: ${userPrompt}`
+
   const response = await one_shot(world_prompt({userPrompt}), .7)
   console.log('/world prompt', response.data.usage)
   const world = top_choice(response as AxiosResponse<CreateChatCompletionResponse, any>)

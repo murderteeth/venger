@@ -2,7 +2,7 @@ import express from 'express'
 import { ChatCompletionRequestMessage, CreateChatCompletionResponse } from 'openai'
 import { template } from '../utils'
 import { AxiosResponse } from 'axios'
-import { one_shot, top_choice } from '../ai'
+import { moderated, one_shot, top_choice } from '../ai'
 
 const prompt = template`
 - you are GAMEMASTER, I am PLAYER
@@ -50,6 +50,7 @@ router.post('/', async function(req, res, next) {
   const world = req.body['world']
   const character = slimCharacter(req.body['character'])
   const buffer = JSON.parse(req.body['buffer']) as ChatCompletionRequestMessage[]
+  if(await moderated(buffer[0].content)) throw `MODERATED: ${buffer[0].content}`
 
   let bufferTransform = ''
   buffer.forEach(message => {
@@ -61,6 +62,7 @@ router.post('/', async function(req, res, next) {
   const response = await one_shot(prompt({world, character, buffer: bufferTransform}))
   console.log('/api/action prompt', response.data.usage)
   let blob = top_choice(response as AxiosResponse<CreateChatCompletionResponse, any>)
+  blob = blob.split('PLAYER:')[0]
   console.log('response')
   console.log(blob)
 

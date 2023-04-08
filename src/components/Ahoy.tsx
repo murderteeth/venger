@@ -4,7 +4,8 @@ import Embers from './Embers'
 import { Button, Input } from './controls'
 import { useBusy } from './Busy'
 import { useLocalStorage } from 'usehooks-ts'
-import { TbMenu, TbFlame } from 'react-icons/tb'
+import { TbMenu } from 'react-icons/tb'
+import { IoMdFlame } from 'react-icons/io'
 import { Character, Turn, World, fetchAction, fetchCharacter, fetchEncounterStart, fetchWorld } from '../api'
 import Player from './Player'
 import Messenger from './Messenger'
@@ -150,9 +151,7 @@ export default function Ahoy() {
       <div className={'absolute z-10 inset-0 flex items-center justify-center'}>
         <Panel className={'w-[30%] h-full p-8 flex flex-col items-start justify-start gap-12'}>
           <div>
-            <Button onClick={onReset} disabled={busy}>
-              <TbMenu size={24}></TbMenu>
-            </Button>
+            <Button onClick={onReset} disabled={busy}>{'RESET'}</Button>
           </div>
           {player && <Player player={player} />}
         </Panel>
@@ -166,7 +165,7 @@ export default function Ahoy() {
             </div>
             <Input _ref={promptInput} type={'text'} disabled={busy} className={'grow pl-24'} />
             <Button onClick={onPrompt} disabled={busy} className={'h-full'}>
-              <TbFlame size={24} />
+              <IoMdFlame size={20} />
             </Button>
           </div>
         </div>

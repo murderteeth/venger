@@ -14,8 +14,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({ label, className, c
     border border-zinc-900 text-zinc-400
     hover:border-red-500 hover:text-red-500
     active:border-red-700 active:text-red-700
-    disabled:text-gray-800 hover:disabled:border-zinc-900
-    ${className}`}>
+    disabled:border-zinc-950 disabled:text-zinc-900
+    hover:disabled:border-zinc-950 hover:disabled:text-zinc-900
+  ${className}`}>
     {children || label}
   </button>
 ))

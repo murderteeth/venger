@@ -48,6 +48,6 @@ export default function AssistantMessage({message}: {message: MessageGram}) {
     {contentType === 'options' && (message.content as string[]).map((option, index) => {
       return <Button key={index} onClick={() => onOption(option)}>{option}</Button>
     })}
-    {contentType === 'busy' && <PacmanLoader size={16} color={colors.red[500]} />}
+    {contentType === 'busy' && <PacmanLoader size={12} color={colors.red[500]} className={'mb-1'} />}
   </div>
 }

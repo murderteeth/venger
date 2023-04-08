@@ -67,3 +67,13 @@ export async function to_object(source: string, output_prompt: string) {
   const rewrite = top_choice(rewriteResponse)
   return JSON.parse(rewrite)
 }
+
+export async function moderated(user_prompt: string) {
+  if(!user_prompt) return false
+  try {
+    const result = await openai.createModeration({input: user_prompt})
+    return result.data.results[0].flagged
+  } catch {
+    return false
+  }
+}

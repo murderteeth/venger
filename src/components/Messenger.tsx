@@ -35,7 +35,7 @@ export default function Messenger() {
 
   return <div className={`
     w-full h-full grow px-6 flex flex-col gap-4 overflow-y-auto
-    scrollbar-thin scrollbar-thumb-red-950 scrollbar-track-zinc-950`}>
+    scrollbar-thin scrollbar-thumb-red-950 hover:scrollbar-thumb-red-700 scrollbar-track-zinc-950`}>
     <div className={'mt-auto'}></div>
     {messages.map((message, index) => {
       if(message.role === 'assistant') {
