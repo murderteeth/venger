@@ -1,4 +1,4 @@
-import React, { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react'
+import React, { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import useKeypress from 'react-use-keypress'
 import Embers from './Embers'
 import { Button, Input } from './controls'
@@ -20,7 +20,8 @@ function Panel({className, children}: {className?: string, children?: ReactNode}
 }
 
 interface Prompter {
-  gamePrompt: (userPrompt: string) => Promise<void>
+  gamePrompt: (userPrompt: string) => Promise<void>,
+  syncingPlayer: boolean
 }
 const	prompterContext = createContext({} as Prompter)
 export const usePrompter = () => useContext(prompterContext)
@@ -29,6 +30,7 @@ export default function Ahoy() {
   const { busy, setBusy } = useBusy()
   const [world, setWorld] = useLocalStorage<World|undefined>('world', undefined)
   const [player, setPlayer] = useLocalStorage<Character|undefined>('player', undefined)
+  const [syncingPlayer, setSyncingPlayer] = useState(false)
   const [turn, setTurn] = useLocalStorage<Turn|undefined>('turn', undefined)
   const {messages, setMessages, resetMessages} = useMessages()
   const promptInput = useRef<HTMLInputElement>(null)
@@ -129,7 +131,8 @@ export default function Ahoy() {
           {role: 'assistant', content: `Your character is ready..`},
           {role: 'assistant', content: result.summary},
           {role: 'assistant', content: `Ready for adventure?`},
-          {role: 'assistant', content: `Where would you like to start? A tavern, a cave, the forest, wherever you like ✨`}
+          {role: 'assistant', content: `Where would you like to start? Chose an option or start wherever you like ✨`},
+          {role: 'assistant', contentType: 'options', content: ['Tavern', 'Cave', 'The Forest']}
         ]
       })
       setPlayer(result)
@@ -162,16 +165,18 @@ export default function Ahoy() {
   }, [world, player, setTurn, setMessages])
 
   const syncPlayer = useCallback(async (lastMessage: string) => {
+    setSyncingPlayer(true)
     console.log('syncPlayer - start')
     if(!player) return
     try {
       const update = await fetchSync(player, [...messages, {role: 'assistant', content: lastMessage}])
       console.log('syncPlayer - stop')
       setPlayer(update)
+      setSyncingPlayer(false)
     } catch {
       console.warn('player sync go boom =(')
     }
-  }, [messages, player, setPlayer])
+  }, [messages, player, setPlayer, setSyncingPlayer])
 
   const actionPrompt = usePromptCallback(async (userPrompt: string) => {
     if(!(world && player && turn)) return
@@ -243,31 +248,39 @@ export default function Ahoy() {
   useKeypress(['/'], () => focusPrompter())
   useKeypress(['Enter'], () => onPrompt())
 
-  return <prompterContext.Provider value={{gamePrompt}}>
+  return <prompterContext.Provider value={{gamePrompt, syncingPlayer}}>
     <div className={`relative w-full h-full bg-black font-mono`}>
       <Embers disabled={false} className={'absolute z-1 inset-0'} />
       <div className={'absolute z-10 inset-0 flex items-center justify-center'}>
-        <Panel className={'w-[30%] h-full p-8 flex flex-col items-start justify-start gap-12'}>
+        <Panel className={'hidden sm:block w-[30%] h-full p-8 flex flex-col items-start justify-start gap-12'}>
           {player && <Player player={player} />}
         </Panel>
 
-        <div className={`w-[40%] h-full pb-4 flex flex-col items-center justify-between gap-4`}>
+        <div className={`relative w-full sm:w-[40%] h-full sm:pb-4 flex flex-col items-center justify-between gap-4`}>
+          <div className={'sm:hidden fixed top-2 right-2'}>
+            <Button onClick={onReset} disabled={busy}>{'RESET'}</Button>
+          </div>
           <Messenger />
-          <div className={'relative w-full px-6 py-4'}>
-            <div className={'w-full flex items-center gap-4'}>
-              <div className={`absolute left-8 w-22 px-2 py-1 text-sm 
+          <div className={'relative w-full px-2 sm:px-6 py-4'}>
+            <div className={'w-full flex items-center gap-2 sm:gap-4'}>
+              <Input 
+                _ref={promptInput} 
+                type={'text'} 
+                disabled={busy} 
+                maxLength={280} 
+                className={'grow w-64 h-12 pl-24'} />
+              <Button onClick={onPrompt} disabled={busy} className={'h-12'}>
+                <AiFillFire size={20} />
+              </Button>
+              <div className={`absolute z-1 left-4 sm:left-8 w-22 px-2 py-1 text-sm 
                 ${busy ? 'text-zinc-900 bg-zinc-950' : 'text-red-800 bg-zinc-900'}`}>
                 {`/${promptType}:`}
               </div>
-              <Input _ref={promptInput} type={'text'} disabled={busy} className={'grow pl-24'} maxLength={280} />
-              <Button onClick={onPrompt} disabled={busy} className={'h-full'}>
-                <AiFillFire size={20} />
-              </Button>
             </div>
           </div>
         </div>
 
-        <Panel className={'w-[30%] h-full py-0 flex flex-col items-center justify-between'}>
+        <Panel className={'hidden w-[30%] h-full py-0 sm:flex flex-col items-center justify-between'}>
           <div className={'pt-12 text-xl'}>
             <Button onClick={onReset} disabled={busy}>{'RESET'}</Button>
           </div>

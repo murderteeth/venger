@@ -12,7 +12,7 @@ const prompt = (0, utils_1.template) `
 - your job is to describe what is happening and direct player actions
 - when you respond, append your response with a no more than 3 options for how PLAYER can proceed
 - each option should be coherent with PLAYER's status
-- each option should be less than 4 words
+- each option should be less than 4 words, and should not contain stop words, and should not contain pronouns
 - use this format to append options to your response, {options: ["one", "two", "three"]}
 - if PLAYER's previous action requires a dice roll, 
   your response should only instruct the PLAYER which dice to roll (without modifiers), 

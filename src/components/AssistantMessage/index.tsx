@@ -45,7 +45,7 @@ export default function AssistantMessage({message}: {message: MessageGram}) {
     }
   }, [setMessages, gamePrompt])
 
-  return <div className={'w-96 flex flex-col gap-4'}>
+  return <div className={'w-64 sm:w-96 flex flex-col gap-4'}>
     {contentType === 'text' && message.content}
     {contentType === 'options' && (message.content as string[]).map((option, index) => {
       return <Button key={index} onClick={() => onOption(option)}>{option}</Button>

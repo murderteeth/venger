@@ -35,8 +35,8 @@ export default function Messenger() {
   }, [messages])
 
   return <div className={`
-    w-full h-full grow px-6 flex flex-col gap-4 overflow-y-auto
-    scrollbar-thin scrollbar-thumb-red-950 hover:scrollbar-thumb-red-700 scrollbar-track-zinc-950`}>
+    w-full h-full grow px-6 flex flex-col gap-4 
+    overflow-y-auto sm:scrollbar-thin sm:scrollbar-thumb-red-950 sm:hover:scrollbar-thumb-red-700 sm:scrollbar-track-zinc-950`}>
     <div className={'mt-auto'}></div>
     {messages.map((message, index) => {
       if(message.role === 'assistant') {
@@ -55,7 +55,7 @@ export default function Messenger() {
           : <div className={'w-[32px]'}></div>
         return <div key={index} className={'self-end flex flex-row-reverse items-end gap-4'}>
           {avatar}
-          <div className={'w-96 p-3 bg-zinc-900'}>{message.content}</div>
+          <div className={'w-64 sm:w-96 p-3 bg-zinc-900'}>{message.content}</div>
         </div>
       }
     })}
