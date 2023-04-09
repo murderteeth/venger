@@ -27,7 +27,7 @@ const errorMessage = 'An arcane glitch has befallen our adventure! Gather your w
 
 export default function AssistantMessage({message}: {message: MessageGram}) {
   const {setMessages} = useMessages()
-  const {actionPrompt} = usePrompter()
+  const {gamePrompt} = usePrompter()
 
   const contentType = useMemo(() => {
     return message.contentType || 'text'
@@ -38,12 +38,12 @@ export default function AssistantMessage({message}: {message: MessageGram}) {
     if(rollData.isRoll && rollData.numberOfDice && rollData.numberOfSides) {
       const roll = rollDice(rollData.numberOfDice, rollData.numberOfSides)
       setMessages(current => [...current, {role: 'user', content: `I rolled ${roll}`}])
-      actionPrompt(`I rolled ${roll}`)
+      gamePrompt(`I rolled ${roll}`)
     } else {
       setMessages(current => [...current, {role: 'user', content: option}])
-      actionPrompt(option)
+      gamePrompt(option)
     }
-  }, [setMessages, actionPrompt])
+  }, [setMessages, gamePrompt])
 
   return <div className={'w-96 flex flex-col gap-4'}>
     {contentType === 'text' && message.content}

@@ -4,7 +4,7 @@ import Embers from './Embers'
 import { Button, Input } from './controls'
 import { useBusy } from './Busy'
 import { useLocalStorage } from 'usehooks-ts'
-import { IoMdFlame } from 'react-icons/io'
+import { AiFillFire } from 'react-icons/ai'
 import { Character, Turn, World, fetchAction, fetchCharacter, fetchStart, fetchWorld } from '../api'
 import Player from './Player'
 import Messenger from './Messenger'
@@ -20,7 +20,7 @@ function Panel({className, children}: {className?: string, children?: ReactNode}
 }
 
 interface Prompter {
-  actionPrompt: (userPrompt: string) => Promise<void>
+  gamePrompt: (userPrompt: string) => Promise<void>
 }
 const	prompterContext = createContext({} as Prompter)
 export const usePrompter = () => useContext(prompterContext)
@@ -32,6 +32,8 @@ export default function Ahoy() {
   const [turn, setTurn] = useLocalStorage<Turn|undefined>('turn', undefined)
   const {messages, setMessages, resetMessages} = useMessages()
   const promptInput = useRef<HTMLInputElement>(null)
+
+  useEffect(() => promptInput.current?.focus(), [])
 
   const promptType = useMemo(() => {
     if(!world) return 'world'
@@ -49,7 +51,21 @@ export default function Ahoy() {
     setMessages([{
       role: 'assistant', content: 'Hail!'
     }, {
-      role: 'assistant', content: `I'm Venger, your game master. Let's create a world to play in, okie!?`
+      role: 'assistant', content: `
+      I'm Venger, your ai game master. 
+      Let's create a world to play in, okie!?`
+    }, {
+      role: 'assistant', content: `
+      Here's some world examples. You can also
+      make up your own world prompt or just hit [Enter] for defaults.`
+    }
+    , {
+      role: 'assistant', contentType: 'options', content: [
+        'Classic D&D',
+        'Volcano Island',
+        'Moonbase 6',
+        'All characters are kittens'
+      ]
     }])
   }, [messages, setMessages])
 
@@ -69,9 +85,31 @@ export default function Ahoy() {
     try {
       const result = await fetchWorld(userPrompt)
       setMessages(current => {
-        return [...current.slice(0, -1), {role: 'assistant', content: result.summary}]
+        return [
+          ...current.slice(0, -1), 
+          {role: 'assistant', content: 'A new world awaits you..'},
+          {role: 'assistant', content: result.summary}
+        ]
       })
       setWorld(result)
+      setMessages(current => {
+        return [
+          ...current, 
+          {role: 'assistant', content: `
+          What kind of character do you want to play?`},
+          {role: 'assistant', content: `
+          Here's some player examples. You can also
+          make up your own player prompt or just hit [Enter] for defaults.`},
+          {
+            role: 'assistant', contentType: 'options', content: [
+              'Half-Orc, Barbarian, High Intimidation',
+              'Half-Elf, Bard, High Charisma, High Performance',
+              'Gnome, Wizard, High Intelligence',
+              'Mancoon, Wizard, High Intelligence, Named Mittens'
+            ]
+          }
+        ]
+      })
     } catch {
       setMessages(current => {
         return [...current.slice(0, -1), {role: 'assistant', contentType: 'error'}]
@@ -86,7 +124,13 @@ export default function Ahoy() {
     try {
       const result = await fetchCharacter(userPrompt, world)
       setMessages(current => {
-        return [...current.slice(0, -1), {role: 'assistant', content: result.summary}]
+        return [
+          ...current.slice(0, -1), 
+          {role: 'assistant', content: `Your new character has been summoned..`},
+          {role: 'assistant', content: result.summary},
+          {role: 'assistant', content: `Ready for adventure?`},
+          {role: 'assistant', content: `Where would you like to start? A tavern, a cave, the forest, wherever you like!`}
+        ]
       })
       setPlayer(result)
     } catch {
@@ -119,7 +163,7 @@ export default function Ahoy() {
 
   const actionPrompt = usePromptCallback(async (userPrompt: string) => {
     if(!(world && player && turn)) return
-    const buffer = [...messages]
+    const buffer = [...messages.filter(m => m.contentType !== 'error')]
     setMessages(current => [...current, {role: 'assistant', contentType: 'busy'}])
 
     try {
@@ -147,20 +191,34 @@ export default function Ahoy() {
     }
   }, [world, player, turn, setTurn, messages, setMessages])
 
+  const gamePrompt = useCallback(async (userPrompt: string) => {
+    if(promptType === 'world') await worldPrompt(userPrompt)
+    if(promptType === 'player') await playerPrompt(userPrompt)
+    if(promptType === 'start') await startPrompt(userPrompt)
+    if(promptType === 'action') await actionPrompt(userPrompt)
+  }, [promptType, worldPrompt, playerPrompt, startPrompt, actionPrompt])
+
   const onPrompt = useCallback(async () => {
     if(!promptInput.current) return
-    const userPrompt = promptInput.current?.value || '...'
+    let userPrompt = promptInput.current?.value
+
+    if(!userPrompt) {
+      const lastMessage = messages[messages.length - 1]
+      if(lastMessage.contentType === 'options') {
+        userPrompt = (lastMessage.content as string[])[0]
+      } else {
+        userPrompt = '..'
+      }
+    }
+
     setMessages(current => {
       return [...current, 
         {role: 'user', content: userPrompt}
       ]
     })
-    if(promptType === 'world') worldPrompt(userPrompt)
-    if(promptType === 'player') playerPrompt(userPrompt)
-    if(promptType === 'start') startPrompt(userPrompt)
-    if(promptType === 'action') actionPrompt(userPrompt)
+    await gamePrompt(userPrompt)
     promptInput.current.value = ''
-  }, [promptInput, setMessages, promptType, worldPrompt, playerPrompt, startPrompt, actionPrompt])
+  }, [promptInput, messages, setMessages, gamePrompt])
 
   const onReset = useCallback(() => {
     resetMessages()
@@ -172,7 +230,7 @@ export default function Ahoy() {
   useKeypress(['/'], () => focusPrompter())
   useKeypress(['Enter'], () => onPrompt())
 
-  return <prompterContext.Provider value={{actionPrompt}}>
+  return <prompterContext.Provider value={{gamePrompt}}>
     <div className={`relative w-full h-full bg-black font-mono`}>
       <Embers disabled={false} className={'absolute z-1 inset-0'} />
       <div className={'absolute z-10 inset-0 flex items-center justify-center'}>
@@ -185,16 +243,21 @@ export default function Ahoy() {
 
         <div className={`w-[40%] h-full pb-4 flex flex-col items-center justify-between gap-4`}>
           <Messenger />
-          <div className={'relative w-full px-6 py-4 flex items-center gap-4'}>
-            <div className={`absolute left-8 w-22 px-2 py-1 text-sm 
-              ${busy ? 'text-zinc-900 bg-zinc-950' : 'text-red-800 bg-zinc-900'}`}>
-              {`/${promptType}:`}
+          <div className={'relative w-full px-6 py-4'}>
+
+            <div className={'w-full flex items-center gap-4'}>
+              <div className={`absolute left-8 w-22 px-2 py-1 text-sm 
+                ${busy ? 'text-zinc-900 bg-zinc-950' : 'text-red-800 bg-zinc-900'}`}>
+                {`/${promptType}:`}
+              </div>
+              <Input _ref={promptInput} type={'text'} disabled={busy} className={'grow pl-24'} maxLength={280} />
+              <Button onClick={onPrompt} disabled={busy} className={'h-full'}>
+                <AiFillFire size={20} />
+              </Button>
             </div>
-            <Input _ref={promptInput} type={'text'} disabled={busy} className={'grow pl-24'} maxLength={280} />
-            <Button onClick={onPrompt} disabled={busy} className={'h-full'}>
-              <IoMdFlame size={20} />
-            </Button>
+
           </div>
+
         </div>
 
         <Panel className={'relative w-[30%] h-full py-0 flex flex-col items-center justify-end'}>
