@@ -1,14 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.to_object = exports.top_choice = exports.multi_shot = exports.one_shot = void 0;
+exports.moderated = exports.to_object = exports.top_choice = exports.multi_shot = exports.one_shot = void 0;
 const openai_1 = require("openai");
 const utils_1 = require("./utils");
+const model = 'gpt-3.5-turbo';
 const configuration = new openai_1.Configuration({
     organization: process.env.OPENAI_ORGANIZATION,
     apiKey: process.env.OPENAI_API_KEY,
 });
 const openai = new openai_1.OpenAIApi(configuration);
-const system_prompt = 'you are a game master that follows dungeons and dragons d20 srd 5e rules. your creator is a half-orc named murderteeth.';
+const system_prompt = `you are an ai game master powered by ${model} that follows dungeons and dragons d20 srd 5e rules`;
 async function one_shot(prompt, temperature = 0.4) {
     if (process.env.NODE_ENV === 'development') {
         console.log();
@@ -23,7 +24,7 @@ async function one_shot(prompt, temperature = 0.4) {
             { role: 'system', content: system_prompt },
             { role: 'user', content: prompt }
         ],
-        model: 'gpt-3.5-turbo',
+        model,
         temperature
     });
 }
@@ -40,7 +41,7 @@ async function multi_shot(messages, temperature = 0.4) {
     }
     return await openai.createChatCompletion({
         messages,
-        model: 'gpt-3.5-turbo',
+        model,
         temperature
     });
 }
@@ -68,3 +69,17 @@ async function to_object(source, output_prompt) {
     return JSON.parse(rewrite);
 }
 exports.to_object = to_object;
+async function moderated(user_prompt) {
+    if (!user_prompt)
+        return false;
+    if (user_prompt.length > 280)
+        return false;
+    try {
+        const result = await openai.createModeration({ input: user_prompt });
+        return result.data.results[0].flagged;
+    }
+    catch (_a) {
+        return false;
+    }
+}
+exports.moderated = moderated;

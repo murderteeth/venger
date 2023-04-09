@@ -5,7 +5,7 @@ import { Button, Input } from './controls'
 import { useBusy } from './Busy'
 import { useLocalStorage } from 'usehooks-ts'
 import { AiFillFire } from 'react-icons/ai'
-import { Character, Turn, World, fetchAction, fetchCharacter, fetchStart, fetchWorld } from '../api'
+import { Character, Turn, World, fetchAction, fetchCharacter, fetchStart, fetchSync, fetchWorld } from '../api'
 import Player from './Player'
 import Messenger from './Messenger'
 import { useMessages } from '../hooks/useMessages'
@@ -126,10 +126,10 @@ export default function Ahoy() {
       setMessages(current => {
         return [
           ...current.slice(0, -1), 
-          {role: 'assistant', content: `Your new character has been summoned..`},
+          {role: 'assistant', content: `Your character is ready..`},
           {role: 'assistant', content: result.summary},
           {role: 'assistant', content: `Ready for adventure?`},
-          {role: 'assistant', content: `Where would you like to start? A tavern, a cave, the forest, wherever you like!`}
+          {role: 'assistant', content: `Where would you like to start? A tavern, a cave, the forest, wherever you like ✨`}
         ]
       })
       setPlayer(result)
@@ -161,6 +161,18 @@ export default function Ahoy() {
     }
   }, [world, player, setTurn, setMessages])
 
+  const syncPlayer = useCallback(async (lastMessage: string) => {
+    console.log('syncPlayer - start')
+    if(!player) return
+    try {
+      const update = await fetchSync(player, [...messages, {role: 'assistant', content: lastMessage}])
+      console.log('syncPlayer - stop')
+      setPlayer(update)
+    } catch {
+      console.warn('player sync go boom =(')
+    }
+  }, [messages, player, setPlayer])
+
   const actionPrompt = usePromptCallback(async (userPrompt: string) => {
     if(!(world && player && turn)) return
     const buffer = [...messages.filter(m => m.contentType !== 'error')]
@@ -184,12 +196,13 @@ export default function Ahoy() {
         }
       })
       setTurn(result)
+      setTimeout(() => syncPlayer(result.description), 250)
     } catch {
       setMessages(current => {
         return [...current.slice(0, -1), {role: 'assistant', contentType: 'error'}]
       })
     }
-  }, [world, player, turn, setTurn, messages, setMessages])
+  }, [world, player, turn, setTurn, messages, setMessages, syncPlayer])
 
   const gamePrompt = useCallback(async (userPrompt: string) => {
     if(promptType === 'world') await worldPrompt(userPrompt)
@@ -235,16 +248,12 @@ export default function Ahoy() {
       <Embers disabled={false} className={'absolute z-1 inset-0'} />
       <div className={'absolute z-10 inset-0 flex items-center justify-center'}>
         <Panel className={'w-[30%] h-full p-8 flex flex-col items-start justify-start gap-12'}>
-          <div>
-            <Button onClick={onReset} disabled={busy}>{'RESET'}</Button>
-          </div>
           {player && <Player player={player} />}
         </Panel>
 
         <div className={`w-[40%] h-full pb-4 flex flex-col items-center justify-between gap-4`}>
           <Messenger />
           <div className={'relative w-full px-6 py-4'}>
-
             <div className={'w-full flex items-center gap-4'}>
               <div className={`absolute left-8 w-22 px-2 py-1 text-sm 
                 ${busy ? 'text-zinc-900 bg-zinc-950' : 'text-red-800 bg-zinc-900'}`}>
@@ -255,15 +264,20 @@ export default function Ahoy() {
                 <AiFillFire size={20} />
               </Button>
             </div>
-
           </div>
-
         </div>
 
-        <Panel className={'relative w-[30%] h-full py-0 flex flex-col items-center justify-end'}>
-          <img src={'/images/venger.png'} alt={'venger'} className={'absolute z-1 bottom-0 scale-75 translate-y-[12%]'} />
-          <div className={'z-50 font-[LadyRadical] text-6xl text-red-600'}>{'Venger'}</div>
-          <div className={'z-10'}>{'rpg-bot 0.1 / gpt-3.5-turbo'}</div>
+        <Panel className={'w-[30%] h-full py-0 flex flex-col items-center justify-between'}>
+          <div className={'pt-12 text-xl'}>
+            <Button onClick={onReset} disabled={busy}>{'RESET'}</Button>
+          </div>
+          <div className={'relative w-3/4 h-96 flex flex-col items-center'}>
+            <div className={'absolute z-10 bottom-0 bg-black/20 backdrop-blur-lg'}>
+              <div className={'z-50 font-[LadyRadical] text-6xl text-red-600'}>{'Venger'}</div>
+              <div className={'z-10'}>{'rpg-bot 0.1 / gpt-3.5-turbo'}</div>
+            </div>
+            <img src={'/images/venger.png'} alt={'venger'} className={'absolute z-1 bottom-0'} />
+          </div>
         </Panel>
       </div>
     </div>

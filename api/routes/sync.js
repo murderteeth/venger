@@ -6,25 +6,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const utils_1 = require("../utils");
 const ai_1 = require("../ai");
-const character_prompt = (0, utils_1.template) `
-create me a level 1 dungeons and dragons character using the dungeons and dragons d20 srd 5e rules. 
-INCLUDE:
-- name
-- hitpoints
-- age
-- gender
-- alignment
-- class
-- race
-- use the Standard Array method to set attributes
-- assign skill modifiers
-- starting inventory
-- some gold
-- a backstory that fits the world they're playing in
-- ${'userPrompt'}
+const prompt = (0, utils_1.template) `
+- use GAMELOG to update CURRENT PLAYER STATS
+- check the gamelog for changes to hitpoints, inventory, and experience points
+- do not make changes to anything except hitpoints, inventory, and experience points
+- do not make conversation
 
-the character will be playing in this world:
-${'world'}
+CURRENT PLAYER STATS:
+${'character'}
+
+GAMELOG:
+${'buffer'}
+END GAMELOG
 
 rewrite your response in this JSON format:
 {
@@ -51,20 +44,26 @@ rewrite your response in this JSON format:
   "inventory": [
     {"item": "string", "count": "number"},
     {"item": "gold", "count": "number"}
-  ],
-  "backstory": "string",
-  "summary": "string"
+  ]
 }
 `;
 const router = express_1.default.Router();
 router.post('/', async function (req, res, next) {
-    const userPrompt = req.body['userPrompt'];
-    if (await (0, ai_1.moderated)(userPrompt))
-        throw `MODERATED: ${userPrompt}`;
-    const world = req.body['world'];
-    const response = await (0, ai_1.one_shot)(character_prompt({ world, userPrompt }), .8);
-    console.log('/character prompt', response.data.usage);
-    const blob = (0, ai_1.top_choice)(response);
-    res.status(200).send({ ...JSON.parse(blob) });
+    const character = req.body['character'];
+    let slim = JSON.parse(character);
+    delete slim['backstory'];
+    delete slim['summary'];
+    slim = JSON.stringify(slim);
+    const buffer = JSON.parse(req.body['buffer']);
+    let bufferTransform = '';
+    buffer.forEach(message => {
+        bufferTransform = `${bufferTransform}\n$- ${message.content}`;
+    });
+    const response = await (0, ai_1.one_shot)(prompt({ character: slim, buffer: bufferTransform }));
+    console.log('/api/sync prompt', response.data.usage);
+    let blob = (0, ai_1.top_choice)(response);
+    console.log('response');
+    console.log(blob);
+    res.status(200).send({ ...JSON.parse(character), ...JSON.parse(blob) });
 });
 exports.default = router;

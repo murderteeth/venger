@@ -49,6 +49,8 @@ router.post('/', async function (req, res, next) {
     const world = req.body['world'];
     const character = slimCharacter(req.body['character']);
     const buffer = JSON.parse(req.body['buffer']);
+    if (await (0, ai_1.moderated)(buffer[0].content))
+        throw `MODERATED: ${buffer[0].content}`;
     let bufferTransform = '';
     buffer.forEach(message => {
         bufferTransform = `${bufferTransform}\n${message.role}: ${message.content}`;
@@ -58,6 +60,8 @@ router.post('/', async function (req, res, next) {
     const response = await (0, ai_1.one_shot)(prompt({ world, character, buffer: bufferTransform }));
     console.log('/api/action prompt', response.data.usage);
     let blob = (0, ai_1.top_choice)(response);
+    blob = blob.split('PLAYER:')[0];
+    blob = blob.replace('[[', '[').replace(']]', ']');
     console.log('response');
     console.log(blob);
     blob = blob.replace(/GAMEMASTER:/g, '');

@@ -5,19 +5,19 @@ import Tabbed from './controls/Tabbed'
 
 function Attributes({player}: {player: Character}) {
   return <div>
-    <Row label={'Strength'}>{player.attributes.strength}</Row>
-    <Row label={'Dexterity'} alt={true}>{player.attributes.dexterity}</Row>
-    <Row label={'Constitution'}>{player.attributes.constitution}</Row>
-    <Row label={'Inteligence'} alt={true}>{player.attributes.intelligence}</Row>
-    <Row label={'Wisdom'}>{player.attributes.wisdom}</Row>
-    <Row label={'Charisma'} alt={true}>{player.attributes.charisma}</Row>
+    <Row label={'Strength'} alt={true} heading={true}>{player.attributes.strength}</Row>
+    <Row label={'Dexterity'}>{player.attributes.dexterity}</Row>
+    <Row label={'Constitution'} alt={true}>{player.attributes.constitution}</Row>
+    <Row label={'Inteligence'}>{player.attributes.intelligence}</Row>
+    <Row label={'Wisdom'} alt={true}>{player.attributes.wisdom}</Row>
+    <Row label={'Charisma'}>{player.attributes.charisma}</Row>
   </div>
 }
 
 function Skills({player}: {player: Character}) {
   return <div>
     {player.skills.map((skill, index) => 
-      <Row key={index} label={skill.name} alt={Boolean(index % 2)}>{`${skill.modifier > 0 ? '+' : ''}${skill.modifier}`}</Row>
+      <Row key={index} label={skill.name} alt={!Boolean(index % 2)} heading={!index}>{`${skill.modifier > 0 ? '+' : ''}${skill.modifier}`}</Row>
     )}
   </div>
 }
@@ -25,7 +25,7 @@ function Skills({player}: {player: Character}) {
 function Inventory({player}: {player: Character}) {
   return <div>
     {player.inventory.map((item, index) => 
-      <Row key={index} label={item.item} alt={Boolean(index % 2)}>{item.count}</Row>
+      <Row key={index} label={item.item} alt={!Boolean(index % 2)} heading={!index}>{item.count}</Row>
     )}
   </div>
 }
@@ -47,16 +47,16 @@ export default function Player({player}: {player: Character}) {
     <Row label={'Class'}>{player.character_class}</Row>
     <Row label={''} ></Row>
 
-    <Row label={<Tabbed 
-      className={'w-full '} 
-      tabClassName={'px-2 hover:text-red-500'} 
-      activeTabClassName={'px-2 text-red-500'}
+    <Tabbed 
+      className={'w-full'} 
+      tabClassName={'pr-3 hover:text-red-500'} 
+      activeTabClassName={'pr-3 text-red-500 underline'}
       tabs={[
       {label: 'Attributes', content: <Attributes player={player} />},
       {label: 'Skills', content: <Skills player={player} />},
       {label: 'Inventory', content: <Inventory player={player} />},
       {label: 'Backstory', content: <Backstory player={player} />}
-    ]} />} alt={true} heading={true}></Row>
+    ]} />
 
   </div>
 }

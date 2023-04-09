@@ -35,7 +35,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "prepare-api": "tsc -p ./api-project/tsconfig.json --outDir ./api/"
+    "prepare-api": "rm -R ./api/ && tsc -p ./api-project/tsconfig.json --outDir ./api/"
   },
   "eslintConfig": {
     "extends": [

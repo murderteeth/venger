@@ -98,3 +98,19 @@ export async function fetchAction(prompt: string, world: World, character: Chara
 
   return await response.json() as Turn
 }
+
+export async function fetchSync(character: Character, buffer: MessageGram[]) {
+  buffer = buffer.filter(m => m.role === 'assistant' && (!m.contentType || m.contentType === 'text'))
+  buffer = JSON.parse(JSON.stringify([...buffer]))
+  console.log('buffer', buffer)
+  const response = await fetch('/api/sync', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      character: JSON.stringify(character),
+      buffer: JSON.stringify(buffer)
+    })
+  })
+
+  return await response.json() as Character
+}

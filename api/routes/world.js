@@ -22,6 +22,8 @@ write your response in this JSON format:
 const router = express_1.default.Router();
 router.post('/', async function (req, res, next) {
     const userPrompt = req.body['userPrompt'];
+    if (await (0, ai_1.moderated)(userPrompt))
+        throw `MODERATED: ${userPrompt}`;
     const response = await (0, ai_1.one_shot)(world_prompt({ userPrompt }), .7);
     console.log('/world prompt', response.data.usage);
     const world = (0, ai_1.top_choice)(response);

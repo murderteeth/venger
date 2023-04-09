@@ -62,10 +62,10 @@ router.post('/', async function(req, res, next) {
   if(await moderated(userPrompt)) throw `MODERATED: ${userPrompt}`
 
   const world = req.body['world']
-  const characterResponse = await one_shot(character_prompt({world, userPrompt}), .8)
-  console.log('/character prompt', characterResponse.data.usage)
-  const character = top_choice(characterResponse as AxiosResponse<CreateChatCompletionResponse, any>)
-  res.status(200).send({...JSON.parse(character)})
+  const response = await one_shot(character_prompt({world, userPrompt}), .8)
+  console.log('/character prompt', response.data.usage)
+  const blob = top_choice(response as AxiosResponse<CreateChatCompletionResponse, any>)
+  res.status(200).send({...JSON.parse(blob)})
 })
 
 export default router

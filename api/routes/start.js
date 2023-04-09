@@ -7,10 +7,10 @@ const express_1 = __importDefault(require("express"));
 const utils_1 = require("../utils");
 const ai_1 = require("../ai");
 const start_prompt = (0, utils_1.template) `
-we are playing a game in this world:
+OUR GAME IS TAKING PLACE IN THIS WORLD:
 ${'world'}
 
-this is my character: 
+CURRENT PLAYER STATUS:
 ${'character'}
 
 - create an easy encounter set in the world that tests my character's best attributes
@@ -20,6 +20,7 @@ ${'character'}
 - each option must make sense given the current situation
 - if the character has no spells, do not offer options involving spells
 - each option should be less than 4 words
+- ${'userPrompt'}
 
 rewrite your response in this JSON format:
 {
@@ -28,12 +29,15 @@ rewrite your response in this JSON format:
 }
 `;
 const router = express_1.default.Router();
-router.post('/start', async function (req, res, next) {
+router.post('/', async function (req, res, next) {
+    const userPrompt = req.body['userPrompt'];
+    if (await (0, ai_1.moderated)(userPrompt))
+        throw `MODERATED: ${userPrompt}`;
     const world = req.body['world'];
     const character = req.body['character'];
-    const startResponse = await (0, ai_1.one_shot)(start_prompt({ world, character }), .75);
-    console.log('/api/start prompt', startResponse.data.usage);
-    const json = (0, ai_1.top_choice)(startResponse);
+    const reponse = await (0, ai_1.one_shot)(start_prompt({ world, character, userPrompt }), .75);
+    console.log('/api/start prompt', reponse.data.usage);
+    const json = (0, ai_1.top_choice)(reponse);
     res.status(200).send({ ...JSON.parse(json) });
 });
 exports.default = router;
