@@ -1,5 +1,6 @@
 import React, { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import useKeypress from 'react-use-keypress'
+import { useMediaQuery } from 'react-responsive'
 import Embers from './Embers'
 import { Button, Input } from './controls'
 import { useBusy } from './Busy'
@@ -33,6 +34,7 @@ export default function Ahoy() {
   const [syncingPlayer, setSyncingPlayer] = useState(false)
   const [turn, setTurn] = useLocalStorage<Turn|undefined>('turn', undefined)
   const {messages, setMessages, resetMessages} = useMessages()
+  const mediumBreakpoint = useMediaQuery({minWidth: 768});
   const promptInput = useRef<HTMLInputElement>(null)
 
   useEffect(() => promptInput.current?.focus(), [])
@@ -45,8 +47,9 @@ export default function Ahoy() {
   }, [world, player, turn])
 
   const focusPrompter = useCallback(() => {
+    if(!mediumBreakpoint) return
     setTimeout(() => promptInput.current?.focus(), 0)
-  }, [promptInput])
+  }, [mediumBreakpoint, promptInput])
 
   useEffect(() => {
     if(messages.length > 0) return
