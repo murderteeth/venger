@@ -23,7 +23,7 @@ function rollDice(numberOfDice: number, numberOfSides: number): number {
   return result;
 }
 
-const errorMessage = 'An arcane glitch has befallen our adventure! Gather your wits, try again, adventure!'
+const errorMessage = 'An arcane glitch has befallen our adventure! Gather your wits, try again!'
 
 export default function AssistantMessage({message}: {message: MessageGram}) {
   const {setMessages} = useMessages()
