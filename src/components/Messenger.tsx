@@ -4,13 +4,14 @@ import { useMessages } from '../hooks/useMessages'
 
 type RoleContentTypeMapping = {
   user: 'text',
-  assistant: 'text' | 'options' | 'busy',
+  assistant: 'text' | 'options' | 'busy' | 'error',
 }
 
 type ContentMapping = {
   text: string,
   options: string[],
   busy: undefined,
+  error: undefined
 }
 
 export type MessageGram = {

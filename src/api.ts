@@ -62,11 +62,11 @@ export async function fetchCharacter(prompt: string, world: World) {
   return await response.json() as Character
 }
 
-export async function fetchEncounterStart(world: World, character: Character) {
-  const response = await fetch('/api/encounter/start', {
+export async function fetchStart(prompt: string, world: World, character: Character) {
+  const response = await fetch('/api/start', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({world: world.description, character: JSON.stringify(character)})
+    body: JSON.stringify({userPrompt: prompt, world: world.description, character: JSON.stringify(character)})
   })
   return await response.json() as Turn
 }

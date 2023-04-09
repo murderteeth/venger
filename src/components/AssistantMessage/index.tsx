@@ -23,6 +23,8 @@ function rollDice(numberOfDice: number, numberOfSides: number): number {
   return result;
 }
 
+const errorMessage = 'An arcane glitch has befallen our adventure! Gather your wits, try again, adventure!'
+
 export default function AssistantMessage({message}: {message: MessageGram}) {
   const {setMessages} = useMessages()
   const {actionPrompt} = usePrompter()
@@ -49,5 +51,6 @@ export default function AssistantMessage({message}: {message: MessageGram}) {
       return <Button key={index} onClick={() => onOption(option)}>{option}</Button>
     })}
     {contentType === 'busy' && <PacmanLoader size={12} color={colors.red[500]} className={'mb-1'} />}
+    {contentType === 'error' && <div className={'text-red-700'}>{errorMessage}</div>}
   </div>
 }

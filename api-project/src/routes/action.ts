@@ -63,6 +63,7 @@ router.post('/', async function(req, res, next) {
   console.log('/api/action prompt', response.data.usage)
   let blob = top_choice(response as AxiosResponse<CreateChatCompletionResponse, any>)
   blob = blob.split('PLAYER:')[0]
+  blob = blob.replace('[[', '[').replace(']]', ']')
   console.log('response')
   console.log(blob)
 

@@ -4,9 +4,8 @@ import Embers from './Embers'
 import { Button, Input } from './controls'
 import { useBusy } from './Busy'
 import { useLocalStorage } from 'usehooks-ts'
-import { TbMenu } from 'react-icons/tb'
 import { IoMdFlame } from 'react-icons/io'
-import { Character, Turn, World, fetchAction, fetchCharacter, fetchEncounterStart, fetchWorld } from '../api'
+import { Character, Turn, World, fetchAction, fetchCharacter, fetchStart, fetchWorld } from '../api'
 import Player from './Player'
 import Messenger from './Messenger'
 import { useMessages } from '../hooks/useMessages'
@@ -66,58 +65,86 @@ export default function Ahoy() {
     setMessages(current => {
       return [...current, {role: 'assistant', contentType: 'busy'}]
     })
-    const result = await fetchWorld(userPrompt)
-    setMessages(current => {
-      return [...current.slice(0, -1), {role: 'assistant', content: result.summary}]
-    })
-    setWorld(result)
+
+    try {
+      const result = await fetchWorld(userPrompt)
+      setMessages(current => {
+        return [...current.slice(0, -1), {role: 'assistant', content: result.summary}]
+      })
+      setWorld(result)
+    } catch {
+      setMessages(current => {
+        return [...current.slice(0, -1), {role: 'assistant', contentType: 'error'}]
+      })
+    }
   }, [setWorld, setMessages])
 
   const playerPrompt = usePromptCallback(async (userPrompt: string) => {
     if(!world) return
     setMessages(current => [...current, {role: 'assistant', contentType: 'busy'}])
-    const result = await fetchCharacter(userPrompt, world)
-    setMessages(current => {
-      return [...current.slice(0, -1), {role: 'assistant', content: result.summary}]
-    })
-    setPlayer(result)
+
+    try {
+      const result = await fetchCharacter(userPrompt, world)
+      setMessages(current => {
+        return [...current.slice(0, -1), {role: 'assistant', content: result.summary}]
+      })
+      setPlayer(result)
+    } catch {
+      setMessages(current => {
+        return [...current.slice(0, -1), {role: 'assistant', contentType: 'error'}]
+      })
+    }
   }, [world, setPlayer, setMessages])
 
-  const encounterPrompt = usePromptCallback(async (userPrompt: string) => {
+  const startPrompt = usePromptCallback(async (userPrompt: string) => {
     if(!(world && player)) return
     setMessages(current => [...current, {role: 'assistant', contentType: 'busy'}])
-    const result = await fetchEncounterStart(world, player)
-    setMessages(current => {
-      return [
-        ...current.slice(0, -1), 
-        {role: 'assistant', content: result.description},
-        {role: 'assistant', contentType: 'options', content: result.options}
-      ]
-    })
-    setTurn(result)
+
+    try {
+      const result = await fetchStart(userPrompt, world, player)
+      setMessages(current => {
+        return [
+          ...current.slice(0, -1), 
+          {role: 'assistant', content: result.description},
+          {role: 'assistant', contentType: 'options', content: result.options}
+        ]
+      })
+      setTurn(result)
+    } catch {
+      setMessages(current => {
+        return [...current.slice(0, -1), {role: 'assistant', contentType: 'error'}]
+      })
+    }
   }, [world, player, setTurn, setMessages])
 
   const actionPrompt = usePromptCallback(async (userPrompt: string) => {
     if(!(world && player && turn)) return
     const buffer = [...messages]
     setMessages(current => [...current, {role: 'assistant', contentType: 'busy'}])
-    const result = await fetchAction(userPrompt, world, player, buffer)
-    setMessages(current => {
-      if(result.options.length > 0) {
-        return [
-          ...current.slice(0, -1), 
-          {role: 'assistant', content: result.description},
-          {role: 'assistant', contentType: 'options', content: result.options}
-        ]
-      } else {
-        return [
-          ...current.slice(0, -1), 
-          {role: 'assistant', content: result.description},
-          {role: 'assistant', content: 'What do you want to do next?'}
-        ]
-      }
-    })
-    setTurn(result)
+
+    try {
+      const result = await fetchAction(userPrompt, world, player, buffer)
+      setMessages(current => {
+        if(result.options.length > 0) {
+          return [
+            ...current.slice(0, -1), 
+            {role: 'assistant', content: result.description},
+            {role: 'assistant', contentType: 'options', content: result.options}
+          ]
+        } else {
+          return [
+            ...current.slice(0, -1), 
+            {role: 'assistant', content: result.description},
+            {role: 'assistant', content: 'What do you want to do next?'}
+          ]
+        }
+      })
+      setTurn(result)
+    } catch {
+      setMessages(current => {
+        return [...current.slice(0, -1), {role: 'assistant', contentType: 'error'}]
+      })
+    }
   }, [world, player, turn, setTurn, messages, setMessages])
 
   const onPrompt = useCallback(async () => {
@@ -130,10 +157,10 @@ export default function Ahoy() {
     })
     if(promptType === 'world') worldPrompt(userPrompt)
     if(promptType === 'player') playerPrompt(userPrompt)
-    if(promptType === 'start') encounterPrompt(userPrompt)
+    if(promptType === 'start') startPrompt(userPrompt)
     if(promptType === 'action') actionPrompt(userPrompt)
     promptInput.current.value = ''
-  }, [promptInput, setMessages, promptType, worldPrompt, playerPrompt, encounterPrompt, actionPrompt])
+  }, [promptInput, setMessages, promptType, worldPrompt, playerPrompt, startPrompt, actionPrompt])
 
   const onReset = useCallback(() => {
     resetMessages()
@@ -163,7 +190,7 @@ export default function Ahoy() {
               ${busy ? 'text-zinc-900 bg-zinc-950' : 'text-red-800 bg-zinc-900'}`}>
               {`/${promptType}:`}
             </div>
-            <Input _ref={promptInput} type={'text'} disabled={busy} className={'grow pl-24'} />
+            <Input _ref={promptInput} type={'text'} disabled={busy} className={'grow pl-24'} maxLength={280} />
             <Button onClick={onPrompt} disabled={busy} className={'h-full'}>
               <IoMdFlame size={20} />
             </Button>
@@ -172,8 +199,8 @@ export default function Ahoy() {
 
         <Panel className={'relative w-[30%] h-full py-0 flex flex-col items-center justify-end'}>
           <img src={'/images/venger.png'} alt={'venger'} className={'absolute z-1 bottom-0 scale-75 translate-y-[12%]'} />
-          <div className={'z-10 font-[LadyRadical] text-6xl text-red-600'}>{'Venger'}</div>
-          <div className={'z-10 text-red-700'}>{'rpg ai 0.1'}</div>
+          <div className={'z-50 font-[LadyRadical] text-6xl text-red-600'}>{'Venger'}</div>
+          <div className={'z-10'}>{'rpg-bot 0.1 / gpt-3.5-turbo'}</div>
         </Panel>
       </div>
     </div>

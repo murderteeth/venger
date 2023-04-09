@@ -8,6 +8,7 @@ interface IInput {
   onChange?: (e: ChangeEvent<HTMLInputElement>) => void,
   disabled?: boolean,
   className?: string,
+  maxLength?: number,
   min?: number,
   max?: number,
   step?: number,
@@ -23,9 +24,10 @@ export default function Input(
     onChange, 
     disabled, 
     className, 
+    maxLength,
     min, 
     max, 
-    step, 
+    step,
     children
   } : IInput) {
   return <input ref={_ref}
@@ -34,6 +36,7 @@ export default function Input(
     placeholder={placeholder}
     onChange={onChange} 
     disabled={disabled}
+    maxLength={maxLength}
     min={min}
     max={max}
     step={step}

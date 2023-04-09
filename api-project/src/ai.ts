@@ -2,6 +2,8 @@ import { ChatCompletionRequestMessage, Configuration, CreateChatCompletionRespon
 import { AxiosResponse } from 'axios'
 import { template } from './utils'
 
+const model = 'gpt-3.5-turbo'
+
 const configuration = new Configuration({
   organization: process.env.OPENAI_ORGANIZATION,
   apiKey: process.env.OPENAI_API_KEY,
@@ -9,7 +11,7 @@ const configuration = new Configuration({
 
 const openai = new OpenAIApi(configuration)
 
-const system_prompt = 'you are a game master that follows dungeons and dragons d20 srd 5e rules'
+const system_prompt = `you are an ai game master powered by ${model} that follows dungeons and dragons d20 srd 5e rules`
 export async function one_shot(prompt: string, temperature = 0.4) {
   if(process.env.NODE_ENV === 'development') {
     console.log()
@@ -25,7 +27,7 @@ export async function one_shot(prompt: string, temperature = 0.4) {
       {role: 'system', content: system_prompt},
       {role: 'user', content: prompt}
     ], 
-    model: 'gpt-3.5-turbo',
+    model,
     temperature
   })  
 }
@@ -43,7 +45,7 @@ export async function multi_shot(messages: ChatCompletionRequestMessage[], tempe
 
   return await openai.createChatCompletion({
     messages,
-    model: 'gpt-3.5-turbo',
+    model,
     temperature
   })  
 }
@@ -70,6 +72,7 @@ export async function to_object(source: string, output_prompt: string) {
 
 export async function moderated(user_prompt: string) {
   if(!user_prompt) return false
+  if(user_prompt.length > 280) return false
   try {
     const result = await openai.createModeration({input: user_prompt})
     return result.data.results[0].flagged
