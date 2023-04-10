@@ -1,7 +1,6 @@
 import React, { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import useKeypress from 'react-use-keypress'
 import { useMediaQuery } from 'react-responsive'
-import Embers from './Embers'
 import { Button, Input } from './controls'
 import { useBusy } from './Busy'
 import { useLocalStorage } from 'usehooks-ts'
@@ -67,9 +66,9 @@ export default function Ahoy() {
     , {
       role: 'assistant', contentType: 'options', content: [
         'Classic D&D',
-        'Volcano Island (🧪)',
-        'Moonbase 6 (🧪)',
-        'All characters are kittens (🧪)'
+        'Volcano Island',
+        'Moonbase 6',
+        'All characters are kittens'
       ]
     }])
   }, [messages, setMessages])
@@ -108,9 +107,9 @@ export default function Ahoy() {
           {
             role: 'assistant', contentType: 'options', content: [
               'Half-Orc, Barbarian, High Intimidation',
-              'Half-Elf, Bard, High Charisma, High Performance',
+              'Half-Elf, Cleric, High Wisdom',
               'Gnome, Wizard, High Intelligence',
-              'Mancoon, Wizard, High Intelligence, Named Mittens'
+              'Tabaxi, Bard, High Charisma, High Performance, Named Mittens'
             ]
           }
         ]
@@ -252,50 +251,47 @@ export default function Ahoy() {
   useKeypress(['Enter'], () => onPrompt())
 
   return <prompterContext.Provider value={{gamePrompt, syncingPlayer}}>
-    <div className={`relative w-full h-full bg-black font-mono`}>
-      <Embers disabled={false} className={'absolute z-1 inset-0'} />
-      <div className={'absolute z-10 inset-0 flex items-center justify-center'}>
-        <Panel className={'hidden sm:block w-[30%] h-full p-8 flex flex-col items-start justify-start gap-12'}>
-          {player && <Player player={player} />}
-        </Panel>
+    <div className={`w-full h-full flex items-center justify-center font-mono`}>
+      <Panel className={'hidden sm:block w-[30%] h-full p-8 flex flex-col items-start justify-start gap-12'}>
+        {player && <Player player={player} />}
+      </Panel>
 
-        <div className={`relative w-full sm:w-[40%] h-full sm:pb-4 flex flex-col items-center justify-between gap-4`}>
-          <div className={'sm:hidden fixed top-2 right-2'}>
-            <Button onClick={onReset} disabled={busy}>{'RESET'}</Button>
-          </div>
-          <Messenger />
-          <div className={'relative w-full px-2 sm:px-6 py-4'}>
-            <div className={'w-full flex items-center gap-2 sm:gap-4'}>
-              <Input 
-                _ref={promptInput} 
-                type={'text'} 
-                disabled={busy} 
-                maxLength={280} 
-                className={'grow w-64 h-12 pl-24'} />
-              <Button onClick={onPrompt} disabled={busy} className={'h-12'}>
-                <AiFillFire size={20} />
-              </Button>
-              <div className={`absolute z-1 left-4 sm:left-8 w-22 px-2 py-1 text-sm 
-                ${busy ? 'text-zinc-900 bg-zinc-950' : 'text-red-800 bg-zinc-900'}`}>
-                {`/${promptType}:`}
-              </div>
+      <div className={`relative w-full sm:w-[40%] h-full sm:pb-4 flex flex-col items-center justify-between gap-4`}>
+        <div className={'sm:hidden fixed top-2 right-2'}>
+          <Button onClick={onReset} disabled={busy}>{'RESET'}</Button>
+        </div>
+        <Messenger />
+        <div className={'relative w-full px-2 sm:px-6 py-4'}>
+          <div className={'w-full flex items-center gap-2 sm:gap-4'}>
+            <Input 
+              _ref={promptInput} 
+              type={'text'} 
+              disabled={busy} 
+              maxLength={280} 
+              className={'grow w-64 h-12 pl-24'} />
+            <Button onClick={onPrompt} disabled={busy} className={'h-12'}>
+              <AiFillFire size={20} />
+            </Button>
+            <div className={`absolute z-1 left-4 sm:left-8 w-22 px-2 py-1 text-sm 
+              ${busy ? 'text-zinc-900 bg-zinc-950' : 'text-red-800 bg-zinc-900'}`}>
+              {`/${promptType}:`}
             </div>
           </div>
         </div>
-
-        <Panel className={'hidden w-[30%] h-full py-0 sm:flex flex-col items-center justify-between'}>
-          <div className={'pt-12 text-xl'}>
-            <Button onClick={onReset} disabled={busy}>{'RESET'}</Button>
-          </div>
-          <div className={'relative w-3/4 h-96 flex flex-col items-center'}>
-            <div className={'absolute z-10 bottom-0 bg-black/20 backdrop-blur-lg'}>
-              <div className={'z-50 font-[LadyRadical] text-6xl text-red-600'}>{'Venger'}</div>
-              <div className={'z-10'}>{'rpg-bot 0.1 / gpt-3.5-turbo'}</div>
-            </div>
-            <img src={'/images/venger.png'} alt={'venger'} className={'absolute z-1 bottom-0'} />
-          </div>
-        </Panel>
       </div>
+
+      <Panel className={'hidden w-[30%] h-full py-0 sm:flex flex-col items-center justify-between'}>
+        <div className={'pt-12 text-xl'}>
+          <Button onClick={onReset} disabled={busy}>{'RESET'}</Button>
+        </div>
+        <div className={'relative w-3/4 h-96 flex flex-col items-center'}>
+          <div className={'absolute z-10 bottom-0 bg-black/20 backdrop-blur-lg'}>
+            <div className={'z-50 font-[LadyRadical] text-6xl text-red-600'}>{'Venger'}</div>
+            <div className={'z-10'}>{'rpg-bot 0.1 / gpt-3.5-turbo'}</div>
+          </div>
+          <img src={'/images/venger.png'} alt={'venger'} className={'absolute z-1 bottom-0'} />
+        </div>
+      </Panel>
     </div>
   </prompterContext.Provider>
 }

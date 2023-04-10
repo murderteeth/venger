@@ -8,7 +8,6 @@ const utils_1 = require("../utils");
 const ai_1 = require("../ai");
 const world_prompt = (0, utils_1.template) `
 imagine a fantasy world
-- something with mature themes and nuanced characters
 - it should have a name, a time period or era, a struggle between good and evil
 - it should have at least one very important character worth mentioning. examples: a ruler, a rogue wizard, a rogue general, or an ancient dragon
 - ${'userPrompt'}
