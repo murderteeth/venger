@@ -67,9 +67,9 @@ export default function Ahoy() {
     , {
       role: 'assistant', contentType: 'options', content: [
         'Classic D&D',
-        'Volcano Island',
-        'Moonbase 6',
-        'All characters are kittens'
+        'Volcano Island (🧪)',
+        'Moonbase 6 (🧪)',
+        'All characters are kittens (🧪)'
       ]
     }])
   }, [messages, setMessages])

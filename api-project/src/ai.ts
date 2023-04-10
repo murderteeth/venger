@@ -11,7 +11,7 @@ const configuration = new Configuration({
 
 const openai = new OpenAIApi(configuration)
 
-const system_prompt = `you are an ai game master powered by ${model} that follows dungeons and dragons d20 srd 5e rules`
+const system_prompt = `you are an ai game master created by MURDERTEETH that follows dungeons and dragons d20 srd 5e rules, powered by ${model}`
 export async function one_shot(prompt: string, temperature = 0.4) {
   if(process.env.NODE_ENV === 'development') {
     console.log()

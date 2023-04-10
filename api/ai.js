@@ -9,7 +9,7 @@ const configuration = new openai_1.Configuration({
     apiKey: process.env.OPENAI_API_KEY,
 });
 const openai = new openai_1.OpenAIApi(configuration);
-const system_prompt = `you are an ai game master powered by ${model} that follows dungeons and dragons d20 srd 5e rules`;
+const system_prompt = `you are an ai game master created by MURDERTEETH that follows dungeons and dragons d20 srd 5e rules, powered by ${model}`;
 async function one_shot(prompt, temperature = 0.4) {
     if (process.env.NODE_ENV === 'development') {
         console.log();
