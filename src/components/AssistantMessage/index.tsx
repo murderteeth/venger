@@ -4,7 +4,8 @@ import { MessageGram } from '../Messenger'
 import { Button } from '../controls'
 import { useMessages } from '../../hooks/useMessages'
 import { PacmanLoader } from 'react-spinners'
-import { usePrompter } from '../Ahoy'
+import { useGm } from '../../hooks/useGameMaster'
+import OpenAiApiKey from './OpenAiApiKey'
 
 function parseRollData(input: string) {
   const regex = /^[Rr]oll (\d+)[ ]?d(\d+)$/
@@ -25,13 +26,22 @@ function rollDice(numberOfDice: number, numberOfSides: number): number {
 
 const errorMessage = 'An arcane glitch has befallen our adventure! Gather your wits, try again!'
 
-export default function AssistantMessage({message}: {message: MessageGram}) {
+export default function AssistantMessage({message, latestMessage}: {message: MessageGram, latestMessage: boolean}) {
   const {setMessages} = useMessages()
-  const {gamePrompt} = usePrompter()
+  const {gamePrompt} = useGm()
 
   const contentType = useMemo(() => {
     return message.contentType || 'text'
   }, [message])
+
+  const factory = useCallback((component: string) => {
+    switch(component) {
+      case 'openai-api-key':
+        return <OpenAiApiKey disabled={!latestMessage} />
+      default:
+        return <></>
+    }
+  }, [latestMessage])
 
   const onOption = useCallback((option: string) => {
     const rollData = parseRollData(option)
@@ -48,8 +58,11 @@ export default function AssistantMessage({message}: {message: MessageGram}) {
   return <div className={'w-64 sm:w-96 flex flex-col gap-4'}>
     {contentType === 'text' && message.content}
     {contentType === 'options' && (message.content as string[]).map((option, index) => {
-      return <Button key={index} onClick={() => onOption(option)}>{option}</Button>
+      return <Button disabled={!latestMessage} key={index} onClick={() => onOption(option)}>{option}</Button>
     })}
+    {contentType === 'component' && <div>
+      {factory(message.content as string)}
+    </div>}
     {contentType === 'busy' && <PacmanLoader size={12} color={colors.red[500]} className={'mb-1'} />}
     {contentType === 'error' && <div className={'text-red-700'}>{errorMessage}</div>}
   </div>

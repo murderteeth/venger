@@ -1,5 +1,11 @@
 import { MessageGram } from "./components/Messenger"
 
+export interface Hail {
+  message: string,
+  options: string[],
+  component: string
+}
+
 export interface World {
   description: string,
   summary: string
@@ -42,6 +48,15 @@ export interface Character {
 export interface Turn {
   description: string,
   options: string[]
+}
+
+export async function fetchHail(prompt: string) {
+  const response = await fetch('/api/hail', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({userPrompt: prompt})
+  })
+  return await response.json() as Hail
 }
 
 export async function fetchWorld(prompt: string) {

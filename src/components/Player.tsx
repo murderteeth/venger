@@ -2,7 +2,7 @@ import React from 'react'
 import Row from './Row'
 import { Character } from '../api'
 import Tabbed from './controls/Tabbed'
-import { usePrompter } from './Ahoy'
+import { useGm } from '../hooks/useGameMaster'
 
 function Attributes({player}: {player: Character}) {
   return <div>
@@ -36,11 +36,11 @@ function Backstory({player}: {player: Character}) {
 }
 
 export default function Player({player}: {player: Character}) {
-  const {syncingPlayer} = usePrompter()
+  const {sync} = useGm()
 
   return <div className={'w-full p-2 rounded-lg'}>
     <Row label={player.name}>{
-      <div className={`w-[6px] h-[6px] rounded-full ${syncingPlayer ? 'bg-red-400 animate-pulse' : ''}`} title={syncingPlayer ? 'Updating character sheet' : ''} />
+      <div className={`w-[6px] h-[6px] rounded-full ${sync ? 'bg-red-400 animate-pulse' : ''}`} title={sync ? 'Updating character sheet' : ''} />
     }</Row>
     <Row label={'Level'} alt={true} heading={true}>{1}</Row>
     <Row label={'XP'}>{player.experience_points}</Row>
