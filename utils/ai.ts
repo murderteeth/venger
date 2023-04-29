@@ -4,15 +4,10 @@ import { template } from './'
 
 const model = 'gpt-3.5-turbo'
 
-const configuration = new Configuration({
-  organization: process.env.OPENAI_ORGANIZATION,
-  apiKey: process.env.OPENAI_API_KEY,
-})
-
-const openai = new OpenAIApi(configuration)
-
 const system_prompt = `you are an ai game master created by MURDERTEETH that follows dungeons and dragons d20 srd 5e rules, powered by ${model}`
-export async function one_shot(prompt: string, temperature = 0.4) {
+export async function one_shot(apiKey: string, prompt: string, temperature = 0.4) {  
+  const openai = new OpenAIApi(new Configuration({ apiKey }))
+
   if(process.env.NODE_ENV === 'development') {
     console.log()
     console.log('prompt/ ---------------')
@@ -32,7 +27,9 @@ export async function one_shot(prompt: string, temperature = 0.4) {
   })  
 }
 
-export async function multi_shot(messages: ChatCompletionRequestMessage[], temperature = 0.4) {
+export async function multi_shot(apiKey: string, messages: ChatCompletionRequestMessage[], temperature = 0.4) {
+  const openai = new OpenAIApi(new Configuration({ apiKey }))
+
   if(process.env.NODE_ENV === 'development') {
     console.log()
     console.log('prompt/ ---------------')
@@ -70,10 +67,10 @@ export async function to_object(source: string, output_prompt: string) {
   return JSON.parse(rewrite)
 }
 
-export async function moderated(user_prompt: string) {
+export async function moderated(apiKey: string, user_prompt: string) {
   if(!user_prompt) return false
-  if(user_prompt.length > 280) return false
   try {
+    const openai = new OpenAIApi(new Configuration({ apiKey }))
     const result = await openai.createModeration({input: user_prompt})
     return result.data.results[0].flagged
   } catch {

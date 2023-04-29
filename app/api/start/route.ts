@@ -29,13 +29,16 @@ rewrite your response in this JSON format:
 
 export async function POST(request: NextRequest) {
   const body = await request.json()
+  const apiKey = body['apiKey']
+  if(!apiKey) throw 'no api key'
+
   const userPrompt = body['userPrompt']
-  if(await moderated(userPrompt)) throw `MODERATED: ${userPrompt}`
+  if(await moderated(apiKey, userPrompt)) throw `MODERATED: ${userPrompt}`
 
   const world = body['world']
   const character = body['character']
 
-  const reponse = await one_shot(start_prompt({world, character, userPrompt}), .75)
+  const reponse = await one_shot(apiKey, start_prompt({world, character, userPrompt}), .75)
   console.log('/api/start prompt', reponse.data.usage)
   const json = top_choice(reponse as AxiosResponse<CreateChatCompletionResponse, any>)
 

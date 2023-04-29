@@ -47,10 +47,13 @@ function slimCharacter(character: string) {
 
 export async function POST(request: NextRequest) {
   const body = await request.json()
+  const apiKey = body['apiKey']
+  if(!apiKey) throw 'no api key'
+
   const world = body['world']
   const character = slimCharacter(body['character'])
   const buffer = JSON.parse(body['buffer']) as ChatCompletionRequestMessage[]
-  if(await moderated(buffer[0].content)) throw `MODERATED: ${buffer[0].content}`
+  if(await moderated(apiKey, buffer[0].content)) throw `MODERATED: ${buffer[0].content}`
 
   let bufferTransform = ''
   buffer.forEach(message => {
@@ -59,7 +62,7 @@ export async function POST(request: NextRequest) {
   bufferTransform = bufferTransform.replace(/assistant:/g, 'GAMEMASTER:')
   bufferTransform = bufferTransform.replace(/user:/g, 'PLAYER:')
 
-  const response = await one_shot(prompt({world, character, buffer: bufferTransform}))
+  const response = await one_shot(apiKey, prompt({world, character, buffer: bufferTransform}))
   console.log('/api/action prompt', response.data.usage)
   let blob = top_choice(response as AxiosResponse<CreateChatCompletionResponse, any>)
   blob = blob.split('PLAYER:')[0]

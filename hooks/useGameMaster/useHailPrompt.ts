@@ -1,14 +1,15 @@
 import { useCallback, useEffect } from 'react'
 import { usePromptCallback } from './usePromptCallback'
 import { useMessages } from '../useMessages'
-import { fetchHail } from '../../api'
 import { useWorldPromptIntroduction } from './useWorldPrompt'
+import { useApi } from '../useApi'
 import { useGameData } from '../useGameData'
 
 export function useHailPrompt() {
   const { messages, setMessages } = useMessages()
-  const {openAiApiKey} = useGameData()
   const introduceWorldPrompt = useWorldPromptIntroduction()
+  const { openAiApiKey } = useGameData()
+  const { fetchHail } = useApi()
 
   const introduceYourself = useCallback(() => {
     setMessages([{
@@ -21,14 +22,12 @@ export function useHailPrompt() {
       Together we'll create a world and character for you to play. It's ezpz!`
     }, {
       role: 'assistant', content: `
-      🧠 Before we start, I need to know how to access my brain.
-      I can use your OpenAI API Key or you can pay $5/mo for an Early Access Subscription.`
+      🧠 Before we play the game, I'll need your OpenAI API key.`
     }, {
-      role: 'assistant', content: `Have questions? Ask!`
+      role: 'assistant', content: `Have questions first? Ask!`
     }, {
       role: 'assistant', contentType: 'options', content: [
-        '$5/mo Early Access Subscription',
-        'Use my own OpenAI API Key'
+        'Setup my OpenAI API Key'
       ]
     }])
   }, [setMessages])
@@ -63,7 +62,8 @@ export function useHailPrompt() {
 
         return results
       })
-    } catch {
+    } catch(error) {
+      console.warn(error)
       setMessages(current => {
         return [...current.slice(0, -1), {role: 'assistant', contentType: 'error'}]
       })

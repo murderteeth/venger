@@ -1,11 +1,12 @@
 import { usePromptCallback } from './usePromptCallback'
 import { useMessages } from '../useMessages'
 import { useGameData } from '../useGameData'
-import { fetchCharacter } from '../../api'
+import { useApi } from '../useApi'
 
 export function usePlayerPrompt() {
   const { setMessages } = useMessages()
   const { world, setPlayer } = useGameData()
+  const { fetchCharacter } = useApi()
 
   return usePromptCallback(async (userPrompt: string) => {
     if(!world) return
@@ -24,7 +25,8 @@ export function usePlayerPrompt() {
         ]
       })
       setPlayer(result)
-    } catch {
+    } catch(error) {
+      console.warn(error)
       setMessages(current => {
         return [...current.slice(0, -1), {role: 'assistant', contentType: 'error'}]
       })

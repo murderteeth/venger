@@ -3,6 +3,7 @@ import { useMessages } from '../useMessages'
 import { useGameData } from '../useGameData'
 import { fetchWorld } from '../../api'
 import { useCallback } from 'react'
+import { useApi } from '../useApi'
 
 export function useWorldPromptIntroduction() {
   const { setMessages } = useMessages()
@@ -30,6 +31,7 @@ export function useWorldPromptIntroduction() {
 export function useWorldPrompt() {
   const { setMessages } = useMessages()
   const { setWorld } = useGameData()
+  const { fetchWorld } = useApi()
 
   return usePromptCallback(async (userPrompt: string) => {
     setMessages(current => {
@@ -64,7 +66,8 @@ export function useWorldPrompt() {
           }
         ]
       })
-    } catch {
+    } catch(error) {
+      console.warn(error)
       setMessages(current => {
         return [...current.slice(0, -1), {role: 'assistant', contentType: 'error'}]
       })

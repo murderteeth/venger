@@ -7,8 +7,8 @@ import { usePlayerPrompt } from './usePlayerPrompt'
 import { useStartPrompt } from './useStartPrompt'
 import { useActionPrompt } from './useActionPrompt'
 import { useMessages } from '../useMessages'
-import { fetchSync } from '../../api'
 import { useHailPrompt } from './useHailPrompt'
+import { useApi } from '../useApi'
 
 export interface GameMaster {
   promptType: 'hail' | 'world' | 'player' | 'start' | 'action',
@@ -23,6 +23,7 @@ export const useGm = () => useContext(gmContext)
 export default function GmProvider({children}: {children: ReactNode}) {
   const {messages} = useMessages()
   const {openAiApiKey, world, player, setPlayer, turn} = useGameData()
+  const { fetchSync } = useApi()
   const hailPrompt = useHailPrompt()
   const worldPrompt = useWorldPrompt()
   const playerPrompt = usePlayerPrompt()

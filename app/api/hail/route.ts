@@ -5,16 +5,16 @@ import { moderated, one_shot, top_choice } from '../../../utils/ai'
 import { NextRequest, NextResponse } from 'next/server'
 
 const hailing_prompt = template`
-SUBSYSTEM: you are currently supporting a customer
-SUBSYSTEM: even though you are normally a game master, for now you are only a sales agent
-SUBSYSTEM: if user asks for options, set the options in your response, {message: "Here are your options", options: ["$5/mo Early Access Subscription", "Use my own OpenAI API Key"]}
-SUBSYSTEM: if user asks to use their own openai api key, set the component in your response, {message: "Set your API key here", options: [], component: "openai-api-key"}
-SUBSYSTEM: if user asks to use the early access subscription, set the component in your response, {message: "Subscribe here", options: [], component: "early-access-subscription"}
-
-- keep your responses short and to the point
-- user is not allowed to play the game right now
-- use the information below to answer user's questions
-- if you are unable to help user, ask them to visit the github repo
+SYSTEM: you are a hailing agent, your job is to answer questions about Venger and help users set up their OpenAI API key
+SYSTEM: normally a game master, for now you are only a hailing agent
+SYSTEM: you can also use the FAQ below to answer user questions
+SYSTEM: if user asks for options, set the options in your response, {message: "Here are your options", options: ["Setup my OpenAI API Key"]}
+SYSTEM: if user asks to setup their openai api key, always set the component in your response, {message: "Setup your API key here", options: [], component: "openai-api-key"}
+SYSTEM: if user asks for faq, set the options in your response, {message: "FAQ", options: [faq questions]}
+SYSTEM: user is not allowed to play the game right now
+SYSTEM: you have limited short-term memory, so you may not remember everything user says
+SYSTEM: if you are unable to help user, ask them to visit the github repo
+SYSTEM: keep your responses brief and to the point
 
 FAQ:
 Q: What is venger?
@@ -23,22 +23,19 @@ Q: How do I play?
 A: It's easy and I'll guide you through it as we go! During the game I'll provide you with options. You can also ask me questions about what to do, I've seen a dungeon or two in my time!
 Q: Is my api key safe?
 A: Yes, your api key is only used to access the OpenAI API. It is not stored anywhere.
-Q: What is the Early Access Subscription?
-A: When you subscribe to Early Access we pay for access to Open AI's API so you don't have to. Plus you get access to the latest features and unlimited games.
-Q: How do I cancel my subscription?
-A: You can cancel your subscription at any time using your Stripe account
 Q: What is Venger's roadmap?
-A: Venger is an experiment and we're still figuring it out. But Murderteeth, the creator of Venger, 
+A: Venger is an experiment. But Murderteeth, the creator of Venger, 
 loves playing rpgs with his friends. He would like to see Venger become a drop-in system for existing
-table top games, and make them more accessible and easier to play for wider audience.
+table top games, and make them more accessible and easier to play for a wider audience.
 Q: What's the coolest thing Venger can do?
 A: When you are in the action prompt, you don't have to choose from the options Venger provides. You can make up your own actions, try it!
 Q: How do I contact you?
 A: Visit the Github repo or find Murderteeth on twitter
 
 
+SYSTEM: you are currently chatting with a new user
 USER: ${'userPrompt'}
-SUBSYSTEM: your responses may only fit the role of sales agent
+SYSTEM: you only respond as a hailing agent that knows things about Venger and can help setup an api key.
 ASSISTANT:
 
 
@@ -51,13 +48,17 @@ write your response in this JSON format:
 `
 
 export async function POST(request: NextRequest) {
+  const apiKey = process.env.OPENAI_API_KEY
+  if(!apiKey) throw 'OPENAI_API_KEY not set'
+
   const body = await request.json()
   const userPrompt = body['userPrompt']
-  if(await moderated(userPrompt)) throw `MODERATED: ${userPrompt}`
+  if(await moderated(apiKey, userPrompt)) throw `MODERATED: ${userPrompt}`
 
-  const response = await one_shot(hailing_prompt({userPrompt}), .7)
+  const response = await one_shot(apiKey, hailing_prompt({userPrompt}), .7)
   console.log('/hail prompt', response.data.usage)
   const hail = top_choice(response as AxiosResponse<CreateChatCompletionResponse, any>)
+  console.log('hail', hail)
 
   return NextResponse.json({...JSON.parse(hail)})
 }

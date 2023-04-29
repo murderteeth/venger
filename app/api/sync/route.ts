@@ -48,22 +48,25 @@ rewrite your response in this JSON format:
 
 export async function POST(request: NextRequest) {
   const body = await request.json()
+  const apiKey = body['apiKey']
+  if(!apiKey) throw 'no api key'
+
   const character = body['character']
   let slim = JSON.parse(character)
   delete slim['backstory']
   delete slim['summary']
   slim = JSON.stringify(slim)
-  if(await moderated(slim)) throw `MODERATED: ${slim}`
+  if(await moderated(apiKey, slim)) throw `MODERATED: ${slim}`
 
   const buffer = JSON.parse(body['buffer']) as ChatCompletionRequestMessage[]
-  if(await moderated(buffer.join())) throw `MODERATED: ${buffer}`
+  if(await moderated(apiKey, buffer.join())) throw `MODERATED: ${buffer}`
 
   let bufferTransform = ''
   buffer.forEach(message => {
     bufferTransform = `${bufferTransform}\n$- ${message.content}`
   })
 
-  const response = await one_shot(prompt({character: slim, buffer: bufferTransform}))
+  const response = await one_shot(apiKey, prompt({character: slim, buffer: bufferTransform}))
   console.log('/api/sync prompt', response.data.usage)
   let blob = top_choice(response as AxiosResponse<CreateChatCompletionResponse, any>)
   console.log('response')

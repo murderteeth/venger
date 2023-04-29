@@ -1,11 +1,12 @@
 import { usePromptCallback } from './usePromptCallback'
 import { useMessages } from '../useMessages'
 import { useGameData } from '../useGameData'
-import { fetchAction } from '../../api'
+import { useApi } from '../useApi'
 
 export function useActionPrompt() {
   const { messages, setMessages } = useMessages()
   const { world, player, turn, setTurn } = useGameData()
+  const { fetchAction } = useApi()
 
   return usePromptCallback(async (userPrompt: string) => {
     if(!(world && player && turn)) return
@@ -31,7 +32,8 @@ export function useActionPrompt() {
       })
       setTurn(result)
       return result.description
-    } catch {
+    } catch(error) {
+      console.warn(error)
       setMessages(current => {
         return [...current.slice(0, -1), {role: 'assistant', contentType: 'error'}]
       })

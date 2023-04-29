@@ -19,10 +19,13 @@ write your response in this JSON format:
 
 export async function POST(request: NextRequest) {
   const body = await request.json()
-  const userPrompt = body['userPrompt']
-  if(await moderated(userPrompt)) throw `MODERATED: ${userPrompt}`
+  const apiKey = body['apiKey']
+  if(!apiKey) throw 'no api key'
 
-  const response = await one_shot(world_prompt({userPrompt}), .7)
+  const userPrompt = body['userPrompt']
+  if(await moderated(apiKey, userPrompt)) throw `MODERATED: ${userPrompt}`
+
+  const response = await one_shot(apiKey, world_prompt({userPrompt}), .7)
   console.log('/world prompt', response.data.usage)
   const world = top_choice(response as AxiosResponse<CreateChatCompletionResponse, any>)
   
