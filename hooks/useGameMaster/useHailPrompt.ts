@@ -27,7 +27,8 @@ export function useHailPrompt() {
       role: 'assistant', content: `Have questions first? Ask!`
     }, {
       role: 'assistant', contentType: 'options', content: [
-        'Setup my OpenAI API Key'
+        'Setup My OpenAI API Key',
+        'FAQ'
       ]
     }])
   }, [setMessages])

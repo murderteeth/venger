@@ -2,26 +2,22 @@ import { ChatCompletionRequestMessage, Configuration, CreateChatCompletionRespon
 import { AxiosResponse } from 'axios'
 import { template } from './'
 
-const model = 'gpt-3.5-turbo'
+export const model = 'gpt-3.5-turbo'
+export const standard_system_prompt = `you are an ai game master created by MURDERTEETH that follows dungeons and dragons d20 srd 5e rules, powered by ${model}`
 
-const system_prompt = `you are an ai game master created by MURDERTEETH that follows dungeons and dragons d20 srd 5e rules, powered by ${model}`
 export async function one_shot(apiKey: string, prompt: string, temperature = 0.4) {  
   const openai = new OpenAIApi(new Configuration({ apiKey }))
 
   if(process.env.NODE_ENV === 'development') {
     console.log()
     console.log('prompt/ ---------------')
-    console.log(`system: ${system_prompt}`)
     console.log(prompt)
     console.log('prompt/ ---------------')
     console.log()
   }
 
   return await openai.createChatCompletion({
-    messages: [
-      {role: 'system', content: system_prompt},
-      {role: 'user', content: prompt}
-    ], 
+    messages: [{ role: 'user', content: prompt }], 
     model,
     temperature
   })  
@@ -55,15 +51,21 @@ export function top_choice(response: AxiosResponse<CreateChatCompletionResponse,
 }
 
 const rewrite_prompt = template`
-rewrite this text:
-${'source'}
-
-${'output_prompt'}
+- you are a message rewriting ai
+- you rewrite user messages into valid JSON format
+- you only respond in valid JSON format, no conversation
+- your response must pass JSON validation
+${'format_prompt'}
 `
-export async function to_object(source: string, output_prompt: string) {
-  const rewriteResponse = await one_shot(rewrite_prompt({source, output_prompt}), .1) as AxiosResponse<CreateChatCompletionResponse, any>
-  console.log('/api.. rewrite prompt', rewriteResponse.data.usage)
-  const rewrite = top_choice(rewriteResponse)
+
+export async function to_object(apiKey: string, source: string, format_prompt: string) {
+  const response = await multi_shot(apiKey, [
+    { role: "system", content: rewrite_prompt({format_prompt}) },
+    { role: "user", content: source }
+  ], .4) as AxiosResponse<CreateChatCompletionResponse, any>
+  console.log('/api.. rewrite prompt', response.data.usage)
+  const rewrite = top_choice(response)
+  console.log('rewrite', rewrite)
   return JSON.parse(rewrite)
 }
 

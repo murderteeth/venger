@@ -1,45 +1,45 @@
 import { CreateChatCompletionResponse } from 'openai'
 import { AxiosResponse } from 'axios'
-import { template } from '../../../utils'
-import { moderated, one_shot, top_choice } from '../../../utils/ai'
+import { moderated, multi_shot, one_shot, to_object, top_choice } from '../../../utils/ai'
 import { NextRequest, NextResponse } from 'next/server'
 
-const hailing_prompt = template`
-SYSTEM: you are a hailing agent, your job is to answer questions about Venger and help users set up their OpenAI API key
-SYSTEM: normally a game master, for now you are only a hailing agent
-SYSTEM: you can also use the FAQ below to answer user questions
-SYSTEM: if user asks for options, set the options in your response, {message: "Here are your options", options: ["Setup my OpenAI API Key"]}
-SYSTEM: if user asks to setup their openai api key, always set the component in your response, {message: "Setup your API key here", options: [], component: "openai-api-key"}
-SYSTEM: if user asks for faq, set the options in your response, {message: "FAQ", options: [faq questions]}
-SYSTEM: user is not allowed to play the game right now
-SYSTEM: you have limited short-term memory, so you may not remember everything user says
-SYSTEM: if you are unable to help user, ask them to visit the github repo
-SYSTEM: keep your responses brief and to the point
+const system_prompt_role = `
+- you are a hailing agent API
+- your job is to answer questions about Venger and help users set up their OpenAI API key
+- you can also use the FAQ below to answer user questions
+- if user asks for what their options are, give them these options: ["Setup My OpenAI API Key", "FAQ""]
+- if user asks "Setup My OpenAI API Key", respond only with: "openai-api-key"
+- if user asks for faq, give them a bullet list of questions from the FAQ below
+- user is not allowed to play the game right now
+- you have limited short-term memory, so you may not remember everything user says
+- if you are unable to help user, ask them to visit the github repo
+- keep your responses brief and to the point
 
-FAQ:
-Q: What is venger?
-A: Venger is an ai game master. It can run chat games based on d20 SRD 5e rules, like Dungeons & Dragons.
-Q: How do I play?
-A: It's easy and I'll guide you through it as we go! During the game I'll provide you with options. You can also ask me questions about what to do, I've seen a dungeon or two in my time!
-Q: Is my api key safe?
-A: Yes, your api key is only used to access the OpenAI API. It is not stored anywhere.
-Q: What is Venger's roadmap?
-A: Venger is an experiment. But Murderteeth, the creator of Venger, 
+- FAQ - 
+Q - What is venger?
+A - Venger is an ai game master. It can run chat games based on d20 SRD 5e rules, like Dungeons & Dragons.
+Q - How do I play?
+A - It's easy and I'll guide you through it as we go! During the game I'll provide you with options. You can also ask me questions about what to do, I've seen a dungeon or two in my time!
+Q - Is my api key safe?
+A - Yes, your api key is only used to access the OpenAI API. It is not stored anywhere.
+Q - What is Venger's roadmap?
+A - Venger is an experiment. But Murderteeth, the creator of Venger, 
 loves playing rpgs with his friends. He would like to see Venger become a drop-in system for existing
 table top games, and make them more accessible and easier to play for a wider audience.
-Q: What's the coolest thing Venger can do?
-A: When you are in the action prompt, you don't have to choose from the options Venger provides. You can make up your own actions, try it!
-Q: How do I contact you?
-A: Visit the Github repo or find Murderteeth on twitter
+Q - What's the coolest thing Venger can do?
+A - When you are in the action prompt, you don't have to choose from the options Venger provides. You can make up your own actions, try it!
+Q - How do I contact you?
+A - Visit the Github repo or find Murderteeth on twitter
+ `
 
+const system_prompt_gaurd = `
+you can only answer questions about Venger and help setup api keys.
+`
 
-SYSTEM: you are currently chatting with a new user
-USER: ${'userPrompt'}
-SYSTEM: you only respond as a hailing agent that knows things about Venger and can help setup an api key.
-ASSISTANT:
-
-
-write your response in this JSON format:
+const format_prompt = `
+- lists go in "options" as a string array
+- if you find something in kabob-case, put it in "component"
+- you respond with a single valid JSON object in this format:
 {
   "message": "your response",
   "options": [],
@@ -55,10 +55,15 @@ export async function POST(request: NextRequest) {
   const userPrompt = body['userPrompt']
   if(await moderated(apiKey, userPrompt)) throw `MODERATED: ${userPrompt}`
 
-  const response = await one_shot(apiKey, hailing_prompt({userPrompt}), .7)
+  const response = await multi_shot(apiKey, [
+    { role: "system", content: system_prompt_role },
+    { role: "user", content: userPrompt },
+    { role: "system", content: system_prompt_gaurd }
+  ], .5)
+
   console.log('/hail prompt', response.data.usage)
   const hail = top_choice(response as AxiosResponse<CreateChatCompletionResponse, any>)
   console.log('hail', hail)
-
-  return NextResponse.json({...JSON.parse(hail)})
+  const json = await to_object(apiKey, hail, format_prompt)
+  return NextResponse.json(json)
 }
