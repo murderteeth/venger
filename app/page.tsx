@@ -12,6 +12,7 @@ import { A, Button, Input } from '@/components/controls'
 import Player from '@/components/Player'
 import Messenger from '@/components/Messenger'
 import { AiFillFire } from 'react-icons/ai'
+import AsciiGIF from '@/components/AsciiGIF'
 
 function Panel({className, children}: {className?: string, children?: ReactNode}) {
   return <div className={`
@@ -103,6 +104,11 @@ export default function Hail() {
   return <main className={`w-full h-full flex items-center justify-center`}>
     <Panel className={'hidden sm:block w-[30%] h-full p-8 flex flex-col items-start justify-start gap-12'}>
       {player && <Player player={player} />}
+      <AsciiGIF 
+        className={'text-xs text-sky-400'} 
+        charactersPerLine={42} 
+        url={'fire.gif'} 
+        />
     </Panel>
 
     <div className={`relative w-full sm:w-[40%] h-full sm:pb-4 flex flex-col items-center justify-between gap-4`}>
