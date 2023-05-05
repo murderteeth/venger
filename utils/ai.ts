@@ -2,14 +2,19 @@ import { ChatCompletionRequestMessage, Configuration, CreateChatCompletionRespon
 import { AxiosResponse } from 'axios'
 import { template } from './'
 
-export const model = 'gpt-3.5-turbo'
-export const standard_system_prompt = `you are an ai game master created by MURDERTEETH that follows dungeons and dragons d20 srd 5e rules, powered by ${model}`
+const GPT3 = 'gpt-3.5-turbo'
+const GPT4 = 'gpt-4'
+export const DEFAULT_MODEL = GPT3
+export const STRONGEST_MODEL = GPT4
 
-export async function one_shot(apiKey: string, prompt: string, temperature = 0.4) {  
+export const standard_system_prompt = `you are an ai game master created by MURDERTEETH that follows dungeons and dragons d20 srd 5e rules, powered by ${DEFAULT_MODEL}`
+
+export async function one_shot(apiKey: string, prompt: string, temperature = 0.4, model = DEFAULT_MODEL) {  
   const openai = new OpenAIApi(new Configuration({ apiKey }))
 
   if(process.env.NODE_ENV === 'development') {
     console.log()
+    console.log('model', model)
     console.log('prompt/ ---------------')
     console.log(prompt)
     console.log('prompt/ ---------------')
@@ -18,16 +23,17 @@ export async function one_shot(apiKey: string, prompt: string, temperature = 0.4
 
   return await openai.createChatCompletion({
     messages: [{ role: 'user', content: prompt }], 
-    model,
+    model: model,
     temperature
   })  
 }
 
-export async function multi_shot(apiKey: string, messages: ChatCompletionRequestMessage[], temperature = 0.4) {
+export async function multi_shot(apiKey: string, messages: ChatCompletionRequestMessage[], temperature = 0.4, model = DEFAULT_MODEL) {
   const openai = new OpenAIApi(new Configuration({ apiKey }))
 
   if(process.env.NODE_ENV === 'development') {
     console.log()
+    console.log('model', model)
     console.log('prompt/ ---------------')
     messages.forEach(message => {
       console.log(`${message.role}: ${message.content}`)
@@ -38,7 +44,7 @@ export async function multi_shot(apiKey: string, messages: ChatCompletionRequest
 
   return await openai.createChatCompletion({
     messages,
-    model,
+    model: model,
     temperature
   })  
 }
@@ -58,11 +64,11 @@ const rewrite_prompt = template`
 ${'format_prompt'}
 `
 
-export async function to_object(apiKey: string, source: string, format_prompt: string) {
+export async function to_object(apiKey: string, source: string, format_prompt: string, model = DEFAULT_MODEL) {
   const response = await multi_shot(apiKey, [
     { role: "system", content: rewrite_prompt({format_prompt}) },
     { role: "user", content: source }
-  ], .4) as AxiosResponse<CreateChatCompletionResponse, any>
+  ], .4, model) as AxiosResponse<CreateChatCompletionResponse, any>
   console.log('/api.. rewrite prompt', response.data.usage)
   const rewrite = top_choice(response)
   console.log('rewrite', rewrite)

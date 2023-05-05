@@ -1,10 +1,12 @@
 import { CreateChatCompletionResponse } from 'openai'
-import { template } from '../../../utils'
-import { moderated, one_shot, top_choice } from '../../../utils/ai'
+import { template } from '../../../../utils'
+import { moderated, one_shot, standard_system_prompt, top_choice } from '../../../../utils/ai'
 import { AxiosResponse } from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 
 const character_prompt = template`
+SYSTEM: ${'standard_system_prompt'}
+
 create me a level 1 dungeons and dragons character using the dungeons and dragons d20 srd 5e rules. 
 INCLUDE:
 - name
@@ -24,7 +26,7 @@ INCLUDE:
 the character will be playing in this world:
 ${'world'}
 
-rewrite your response in this JSON format:
+rewrite your response in this JSON format, all properties are required but may be empty:
 {
   "name": "string",
   "age": "number",
@@ -64,7 +66,7 @@ export async function POST(request: NextRequest) {
   if(await moderated(apiKey, userPrompt)) throw `MODERATED: ${userPrompt}`
 
   const world = body['world']
-  const response = await one_shot(apiKey, character_prompt({world, userPrompt}), .8)
+  const response = await one_shot(apiKey, character_prompt({standard_system_prompt, world, userPrompt}), .8)
   console.log('/character prompt', response.data.usage)
   const blob = top_choice(response as AxiosResponse<CreateChatCompletionResponse, any>)
   

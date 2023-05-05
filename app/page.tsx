@@ -12,7 +12,7 @@ import { A, Button, Input } from '@/components/controls'
 import Player from '@/components/Player'
 import Messenger from '@/components/Messenger'
 import { AiFillFire } from 'react-icons/ai'
-import AsciiGIF from '@/components/AsciiGIF'
+import { STRONGEST_MODEL } from '@/utils/ai'
 
 function Panel({className, children}: {className?: string, children?: ReactNode}) {
   return <div className={`
@@ -104,11 +104,6 @@ export default function Hail() {
   return <main className={`w-full h-full flex items-center justify-center`}>
     <Panel className={'hidden sm:block w-[30%] h-full p-8 flex flex-col items-start justify-start gap-12'}>
       {player && <Player player={player} />}
-      <AsciiGIF 
-        className={'text-xs text-sky-400'} 
-        charactersPerLine={42} 
-        url={'fire.gif'} 
-        />
     </Panel>
 
     <div className={`relative w-full sm:w-[40%] h-full sm:pb-4 flex flex-col items-center justify-between gap-4`}>
@@ -144,7 +139,7 @@ export default function Hail() {
       <div className={'relative w-3/4 h-96 flex flex-col items-center'}>
         <div className={'absolute z-10 bottom-0 pb-4 bg-black/20 backdrop-blur-lg flex flex-col items-center'}>
           <div className={'z-50 font-[LadyRadical] text-6xl text-red-600'}>{'Venger'}</div>
-          <div className={'z-10'}>{'rpg-bot 0.1 / gpt-3.5-turbo'}</div>
+          <div className={'z-10'}>{`rpg-bot 0.1 / ${STRONGEST_MODEL}`}</div>
           <div className={'z-10 '}>
             <A 
               href={'https://github.com/murderteeth/venger'}

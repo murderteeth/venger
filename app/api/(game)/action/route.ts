@@ -1,10 +1,13 @@
 import { ChatCompletionRequestMessage, CreateChatCompletionResponse } from 'openai'
-import { template } from '../../../utils'
-import { moderated, one_shot, top_choice } from '../../../utils/ai'
+import { template } from '../../../../utils'
+import { moderated, one_shot, STRONGEST_MODEL, top_choice } from '../../../../utils/ai'
 import { AxiosResponse } from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
+import { standard_system_prompt } from '@/utils/ai'
 
 const prompt = template`
+SYSTEM: ${'standard_system_prompt'}
+
 - you are GAMEMASTER, I am PLAYER
 - we are playing a turn based game of dungeons and dragons
 - your job is to describe what is happening and direct player actions
@@ -62,7 +65,7 @@ export async function POST(request: NextRequest) {
   bufferTransform = bufferTransform.replace(/assistant:/g, 'GAMEMASTER:')
   bufferTransform = bufferTransform.replace(/user:/g, 'PLAYER:')
 
-  const response = await one_shot(apiKey, prompt({world, character, buffer: bufferTransform}))
+  const response = await one_shot(apiKey, prompt({standard_system_prompt, world, character, buffer: bufferTransform}), .4, STRONGEST_MODEL)
   console.log('/api/action prompt', response.data.usage)
   let blob = top_choice(response as AxiosResponse<CreateChatCompletionResponse, any>)
   blob = blob.split('PLAYER:')[0]
@@ -78,7 +81,7 @@ export async function POST(request: NextRequest) {
   let description: string = blob
 
   if (match) {
-    options = match[1].split(",").map(option => option.trim().replace(/"/g, ''))
+    options = match[1].split(",").map((option: string) => option.trim().replace(/"/g, ''))
     description = blob.replace(optionRegex, "")
   }
 

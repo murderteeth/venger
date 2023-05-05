@@ -47,8 +47,8 @@ export default function AssistantMessage({message, latestMessage}: {message: Mes
     const rollData = parseRollData(option)
     if(rollData.isRoll && rollData.numberOfDice && rollData.numberOfSides) {
       const roll = rollDice(rollData.numberOfDice, rollData.numberOfSides)
-      setMessages(current => [...current, {role: 'user', content: `I rolled ${roll}`}])
-      gamePrompt(`I rolled ${roll}`)
+      setMessages(current => [...current, {role: 'user', content: `I roll ${roll}`}])
+      gamePrompt(`I roll ${roll}`)
     } else {
       setMessages(current => [...current, {role: 'user', content: option}])
       gamePrompt(option)

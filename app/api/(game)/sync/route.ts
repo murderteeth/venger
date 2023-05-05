@@ -1,10 +1,12 @@
 import { ChatCompletionRequestMessage, CreateChatCompletionResponse } from 'openai'
-import { template } from '../../../utils'
-import { moderated, one_shot, top_choice } from '../../../utils/ai'
+import { template } from '../../../../utils'
+import { moderated, one_shot, standard_system_prompt, top_choice } from '../../../../utils/ai'
 import { AxiosResponse } from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 
 const prompt = template`
+SYSTEM: ${'standard_system_prompt'}
+
 - use GAMELOG to update CURRENT PLAYER STATS
 - check the gamelog for changes to hitpoints, inventory, and experience points
 - do not make changes to anything except hitpoints, inventory, and experience points
@@ -66,7 +68,7 @@ export async function POST(request: NextRequest) {
     bufferTransform = `${bufferTransform}\n$- ${message.content}`
   })
 
-  const response = await one_shot(apiKey, prompt({character: slim, buffer: bufferTransform}))
+  const response = await one_shot(apiKey, prompt({standard_system_prompt, character: slim, buffer: bufferTransform}))
   console.log('/api/sync prompt', response.data.usage)
   let blob = top_choice(response as AxiosResponse<CreateChatCompletionResponse, any>)
   console.log('response')
