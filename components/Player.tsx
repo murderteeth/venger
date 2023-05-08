@@ -1,8 +1,8 @@
 import React from 'react'
 import Row from './Row'
-import { Character } from '../api'
 import Tabbed from './controls/Tabbed'
 import { useGm } from '../hooks/useGameMaster'
+import { Character } from '@/hooks/useApi'
 
 function Attributes({player}: {player: Character}) {
   return <div>

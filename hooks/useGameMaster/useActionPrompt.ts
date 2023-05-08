@@ -14,7 +14,7 @@ export function useActionPrompt() {
     setMessages(current => [...current, {role: 'assistant', contentType: 'busy'}])
 
     try {
-      const result = await fetchAction(userPrompt, world, player, buffer, model)
+      const result = await fetchAction(userPrompt, world, player, buffer, model as string)
       setMessages(current => {
         if(result.options.length > 0) {
           return [

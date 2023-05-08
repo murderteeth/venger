@@ -1,4 +1,4 @@
-import React, { useEffect, useState, createRef } from 'react'
+import React, { useEffect, useState, createRef, useCallback } from 'react'
 import gifFrames from 'gif-frames'
 
 type AsciiGIFProps = {
@@ -13,7 +13,7 @@ const AsciiGIF: React.FC<AsciiGIFProps> = ({ url, charactersPerLine, framesPerSe
   const [currentFrame, setCurrentFrame] = useState(0)
   const canvasRef = createRef<HTMLCanvasElement>()
 
-  const createAsciiFrames = async (url: string, charactersPerLine: number): Promise<string[][][]> => {
+  const createAsciiFrames = useCallback(async (url: string, charactersPerLine: number): Promise<string[][][]> => {
     const newAsciiFrames: string[][][] = []
 
     try {
@@ -53,7 +53,7 @@ const AsciiGIF: React.FC<AsciiGIFProps> = ({ url, charactersPerLine, framesPerSe
     }
 
     return newAsciiFrames
-  }
+  }, [])
 
   const pixelToAscii = (pixelData: Uint8ClampedArray): string => {
     const [r, g, b] = Array.from(pixelData)

@@ -1,7 +1,6 @@
 import { usePromptCallback } from './usePromptCallback'
 import { useMessages } from '../useMessages'
 import { useGameData } from '../useGameData'
-import { fetchWorld } from '../../api'
 import { useCallback } from 'react'
 import { useApi } from '../useApi'
 

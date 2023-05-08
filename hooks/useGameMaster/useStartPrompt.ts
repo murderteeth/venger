@@ -13,7 +13,7 @@ export function useStartPrompt() {
     setMessages(current => [...current, {role: 'assistant', contentType: 'busy'}])
 
     try {
-      const result = await fetchStart(userPrompt, world, player, model)
+      const result = await fetchStart(userPrompt, world, player, model as string)
       setMessages(current => {
         return [
           ...current.slice(0, -1), 
