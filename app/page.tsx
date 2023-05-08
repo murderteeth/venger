@@ -12,7 +12,6 @@ import { A, Button, Input } from '@/components/controls'
 import Player from '@/components/Player'
 import Messenger from '@/components/Messenger'
 import { AiFillFire } from 'react-icons/ai'
-import { STRONGEST_MODEL } from '@/utils/ai'
 
 function Panel({className, children}: {className?: string, children?: ReactNode}) {
   return <div className={`
@@ -57,7 +56,7 @@ function ResetButton() {
 export default function Hail() {
   const { busy } = useBusy()
   const { messages, setMessages } = useMessages()
-  const { player } = useGameData()
+  const { model, ready, player } = useGameData()
   const mediumBreakpoint = useMediaQuery({minWidth: 768});
   const promptInput = useRef<HTMLInputElement>(null)
   const { promptType, gamePrompt } = useGm()
@@ -116,16 +115,16 @@ export default function Hail() {
           <Input 
             ref={promptInput} 
             type={'text'} 
-            disabled={busy}
+            disabled={!ready || busy}
             onFocus={() => setPrompterFocus(true)}
             onBlur={() => setPrompterFocus(false)}
             maxLength={280} 
             className={'grow w-64 h-12 pl-24'} />
-          <Button onClick={onPrompt} disabled={busy} className={'h-12'}>
+          <Button onClick={onPrompt} disabled={!ready || busy} className={'h-12'}>
             <AiFillFire size={20} />
           </Button>
           <div className={`absolute z-1 left-4 sm:left-8 w-22 px-2 py-1 text-sm 
-            ${busy ? 'text-zinc-900 bg-zinc-950' : 'text-red-800 bg-zinc-900'}`}>
+            ${(!ready || busy) ? 'text-zinc-900 bg-zinc-950' : 'text-red-800 bg-zinc-900'}`}>
             {`/${promptType}:`}
           </div>
         </div>
@@ -139,7 +138,7 @@ export default function Hail() {
       <div className={'relative w-3/4 h-96 flex flex-col items-center'}>
         <div className={'absolute z-10 bottom-0 pb-4 bg-black/20 backdrop-blur-lg flex flex-col items-center'}>
           <div className={'z-50 font-[LadyRadical] text-6xl text-red-600'}>{'Venger'}</div>
-          <div className={'z-10'}>{`rpg-bot 0.1 / ${STRONGEST_MODEL}`}</div>
+          <div className={'z-10'}>{`rpg-bot 0.1 / ${model || 'model not set'}`}</div>
           <div className={'z-10 '}>
             <A 
               href={'https://github.com/murderteeth/venger'}

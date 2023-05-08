@@ -2,14 +2,14 @@ import { ChatCompletionRequestMessage, Configuration, CreateChatCompletionRespon
 import { AxiosResponse } from 'axios'
 import { template } from './'
 
-const GPT3 = 'gpt-3.5-turbo'
-const GPT4 = 'gpt-4'
-export const DEFAULT_MODEL = GPT3
-export const STRONGEST_MODEL = GPT4
+export const DEFAULT_MODEL = 'gpt-3.5-turbo'
+export const STRONGEST_MODEL = 'gpt-4'
+export const MODELS = [DEFAULT_MODEL, STRONGEST_MODEL]
+export type Model = 'gpt-4' | 'gpt-3.5-turbo';
 
-export const standard_system_prompt = `you are an ai game master created by MURDERTEETH that follows dungeons and dragons d20 srd 5e rules, powered by ${DEFAULT_MODEL}`
+export const standard_system_prompt = `you are an ai game master created by MURDERTEETH that follows dungeons and dragons d20 srd 5e rules`
 
-export async function one_shot(apiKey: string, prompt: string, temperature = 0.4, model = DEFAULT_MODEL) {  
+export async function one_shot(apiKey: string, prompt: string, temperature = 0.4, model: Model = DEFAULT_MODEL) {
   const openai = new OpenAIApi(new Configuration({ apiKey }))
 
   if(process.env.NODE_ENV === 'development') {
@@ -28,7 +28,7 @@ export async function one_shot(apiKey: string, prompt: string, temperature = 0.4
   })  
 }
 
-export async function multi_shot(apiKey: string, messages: ChatCompletionRequestMessage[], temperature = 0.4, model = DEFAULT_MODEL) {
+export async function multi_shot(apiKey: string, messages: ChatCompletionRequestMessage[], temperature = 0.4, model: Model = DEFAULT_MODEL) {
   const openai = new OpenAIApi(new Configuration({ apiKey }))
 
   if(process.env.NODE_ENV === 'development') {
@@ -64,7 +64,7 @@ const rewrite_prompt = template`
 ${'format_prompt'}
 `
 
-export async function to_object(apiKey: string, source: string, format_prompt: string, model = DEFAULT_MODEL) {
+export async function to_object(apiKey: string, source: string, format_prompt: string, model: Model = DEFAULT_MODEL) {
   const response = await multi_shot(apiKey, [
     { role: "system", content: rewrite_prompt({format_prompt}) },
     { role: "user", content: source }

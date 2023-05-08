@@ -3,9 +3,9 @@ import colors from 'tailwindcss/colors'
 import { MessageGram } from '../Messenger'
 import { Button } from '../controls'
 import { useMessages } from '../../hooks/useMessages'
-import { PacmanLoader } from 'react-spinners'
+import { BeatLoader } from 'react-spinners'
 import { useGm } from '../../hooks/useGameMaster'
-import OpenAiApiKey from './OpenAiApiKey'
+import Settings from './Settings'
 
 function parseRollData(input: string) {
   const regex = /^[Rr]oll (\d+)[ ]?d(\d+)$/
@@ -36,10 +36,10 @@ export default function AssistantMessage({message, latestMessage}: {message: Mes
 
   const factory = useCallback((component: string) => {
     switch(component) {
-      case 'openai-api-key':
-        return <OpenAiApiKey disabled={!latestMessage} />
+      case 'settings':
+        return <Settings disabled={!latestMessage} />
       default:
-        return <></>
+        return <>{'component' + component}</>
     }
   }, [latestMessage])
 
@@ -63,7 +63,7 @@ export default function AssistantMessage({message, latestMessage}: {message: Mes
     {contentType === 'component' && <div>
       {factory(message.content as string)}
     </div>}
-    {contentType === 'busy' && <PacmanLoader size={12} color={colors.red[500]} className={'mb-1'} />}
+    {contentType === 'busy' && <BeatLoader size={12} color={colors.red[500]} className={'mb-2'} />}
     {contentType === 'error' && <div className={'text-red-700'}>{errorMessage}</div>}
   </div>
 }

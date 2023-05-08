@@ -15,21 +15,18 @@ export function useHailPrompt() {
     setMessages([{
       role: 'assistant', content: '👋 Hail!'
     }, {
-      role: 'assistant', content: `I'm Venger, your ai game master.`
+      role: 'assistant', content: `
+      I'm Venger, your ai game master.`
     }, {
       role: 'assistant', content: `
-      I'm trained to run rpg chat games based on d20 srd 5e rules, like Dungeons & Dragons.
-      Together we'll create a world and character for you to play. It's ezpz!`
+      I'm trained to run choose-your-own-adventure stories based on d20 srd 5e rules, like Dungeons & Dragons.
+      Sweet!`
     }, {
       role: 'assistant', content: `
-      🧠 Before we play the game, I'll need your OpenAI API key.`
+      🧠 Before we start, lets setup your OpenAI API key.
+      You can also enable GPT4 if you have access to it 👀`
     }, {
-      role: 'assistant', content: `Have questions first? Ask!`
-    }, {
-      role: 'assistant', contentType: 'options', content: [
-        'Setup My OpenAI API Key',
-        'FAQ'
-      ]
+      role: 'assistant', contentType: 'component', content: 'settings'
     }])
   }, [setMessages])
 

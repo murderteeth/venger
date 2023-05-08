@@ -1,6 +1,6 @@
 import { ChatCompletionRequestMessage, CreateChatCompletionResponse } from 'openai'
 import { template } from '../../../../utils'
-import { moderated, one_shot, STRONGEST_MODEL, top_choice } from '../../../../utils/ai'
+import { MODELS, moderated, one_shot, top_choice } from '../../../../utils/ai'
 import { AxiosResponse } from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 import { standard_system_prompt } from '@/utils/ai'
@@ -40,18 +40,19 @@ END EXAMPLE
 PREDICT WHAT GAMEMASTER SAYS NEXT IN THIS CONVERSATION:
 ${'buffer'}
 `
-
 function slimCharacter(character: string) {
   const json = JSON.parse(character)
   delete json.backstory
   return JSON.stringify(json)
 }
 
-
 export async function POST(request: NextRequest) {
   const body = await request.json()
   const apiKey = body['apiKey']
   if(!apiKey) throw 'no api key'
+  const model = body['model']
+  if(!model) throw 'no model'
+  if(!MODELS.includes(model)) throw 'bad model, bad!'
 
   const world = body['world']
   const character = slimCharacter(body['character'])
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
   bufferTransform = bufferTransform.replace(/assistant:/g, 'GAMEMASTER:')
   bufferTransform = bufferTransform.replace(/user:/g, 'PLAYER:')
 
-  const response = await one_shot(apiKey, prompt({standard_system_prompt, world, character, buffer: bufferTransform}), .4, STRONGEST_MODEL)
+  const response = await one_shot(apiKey, prompt({standard_system_prompt, world, character, buffer: bufferTransform}), .4, model)
   console.log('/api/action prompt', response.data.usage)
   let blob = top_choice(response as AxiosResponse<CreateChatCompletionResponse, any>)
   blob = blob.split('PLAYER:')[0]

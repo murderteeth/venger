@@ -1,7 +1,7 @@
 import { CreateChatCompletionResponse } from 'openai'
 import { AxiosResponse } from 'axios'
-import { template } from '../../../utils'
-import { moderated, one_shot, top_choice } from '../../../utils/ai'
+import { template } from '../../../../utils'
+import { moderated, one_shot, top_choice } from '../../../../utils/ai'
 import { NextRequest, NextResponse } from 'next/server'
 
 const settings_prompt = template`
@@ -47,17 +47,18 @@ write your response in this JSON format:
 `
 
 export async function POST(request: NextRequest) {
-  const apiKey = process.env.OPENAI_API_KEY
-  if(!apiKey) throw 'OPENAI_API_KEY not set'
+  throw 'disabled'
+  // const apiKey = process.env.OPENAI_API_KEY
+  // if(!apiKey) throw 'OPENAI_API_KEY not set'
 
-  const body = await request.json()
-  const userPrompt = body['userPrompt']
-  if(await moderated(apiKey, userPrompt)) throw `MODERATED: ${userPrompt}`
+  // const body = await request.json()
+  // const userPrompt = body['userPrompt']
+  // if(await moderated(apiKey, userPrompt)) throw `MODERATED: ${userPrompt}`
 
-  const response = await one_shot(apiKey, settings_prompt({userPrompt}), .7)
-  console.log('/hail prompt', response.data.usage)
-  const hail = top_choice(response as AxiosResponse<CreateChatCompletionResponse, any>)
-  console.log('hail', hail)
+  // const response = await one_shot(apiKey, settings_prompt({userPrompt}), .7)
+  // console.log('/hail prompt', response.data.usage)
+  // const hail = top_choice(response as AxiosResponse<CreateChatCompletionResponse, any>)
+  // console.log('hail', hail)
 
-  return NextResponse.json({...JSON.parse(hail)})
+  // return NextResponse.json({...JSON.parse(hail)})
 }

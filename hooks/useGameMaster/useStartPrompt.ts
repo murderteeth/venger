@@ -5,7 +5,7 @@ import { useApi } from '../useApi'
 
 export function useStartPrompt() {
   const { setMessages } = useMessages()
-  const { world, player, setTurn } = useGameData()
+  const { world, player, setTurn, model } = useGameData()
   const { fetchStart } = useApi()
 
   return usePromptCallback(async (userPrompt: string) => {
@@ -13,7 +13,7 @@ export function useStartPrompt() {
     setMessages(current => [...current, {role: 'assistant', contentType: 'busy'}])
 
     try {
-      const result = await fetchStart(userPrompt, world, player)
+      const result = await fetchStart(userPrompt, world, player, model)
       setMessages(current => {
         return [
           ...current.slice(0, -1), 

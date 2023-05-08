@@ -48,23 +48,24 @@ const system_prompt_format = `
 `
 
 export async function POST(request: NextRequest) {
-  const apiKey = process.env.OPENAI_API_KEY
-  if(!apiKey) throw 'OPENAI_API_KEY not set'
+  throw 'disabled'
+  // const apiKey = process.env.OPENAI_API_KEY
+  // if(!apiKey) throw 'OPENAI_API_KEY not set'
 
-  const body = await request.json()
-  const userPrompt = body['userPrompt']
-  if(await moderated(apiKey, userPrompt)) throw `MODERATED: ${userPrompt}`
+  // const body = await request.json()
+  // const userPrompt = body['userPrompt']
+  // if(await moderated(apiKey, userPrompt)) throw `MODERATED: ${userPrompt}`
 
-  const response = await multi_shot(apiKey, [
-    { role: "system", content: system_prompt_role },
-    { role: "user", content: userPrompt },
-    { role: "system", content: system_prompt_gaurd },
-    { role: "system", content: system_prompt_format }
-  ], .5, STRONGEST_MODEL)
+  // const response = await multi_shot(apiKey, [
+  //   { role: "system", content: system_prompt_role },
+  //   { role: "user", content: userPrompt },
+  //   { role: "system", content: system_prompt_gaurd },
+  //   { role: "system", content: system_prompt_format }
+  // ], .5, STRONGEST_MODEL)
 
-  console.log('/hail prompt', response.data.usage)
-  const hail = top_choice(response as AxiosResponse<CreateChatCompletionResponse, any>)
-  console.log('hail', hail)
+  // console.log('/hail prompt', response.data.usage)
+  // const hail = top_choice(response as AxiosResponse<CreateChatCompletionResponse, any>)
+  // console.log('hail', hail)
 
-  return NextResponse.json(JSON.parse(hail))
+  // return NextResponse.json(JSON.parse(hail))
 }

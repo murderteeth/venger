@@ -20,7 +20,7 @@ export function usePlayerPrompt() {
           {role: 'assistant', content: `Your character is ready..`},
           {role: 'assistant', content: result.summary},
           {role: 'assistant', content: `Ready for adventure?`},
-          {role: 'assistant', content: `Where would you like to start? Chose an option or start wherever you like ✨`},
+          {role: 'assistant', content: `Where would you like to start? Chose an option or use the prompt to start wherever you like ✨`},
           {role: 'assistant', contentType: 'options', content: ['Tavern', 'Cave', 'The Forest']}
         ]
       })

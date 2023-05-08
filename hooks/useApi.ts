@@ -82,16 +82,16 @@ export function useApi() {
     return await response.json() as Character
   }, [apiKey])
   
-  const fetchStart = useCallback(async (prompt: string, world: World, character: Character) => {
+  const fetchStart = useCallback(async (prompt: string, world: World, character: Character, model: string) => {
     const response = await fetch('/api/start', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({apiKey, userPrompt: prompt, world: world.description, character: JSON.stringify(character)})
+      body: JSON.stringify({apiKey, userPrompt: prompt, world: world.description, character: JSON.stringify(character), model})
     })
     return await response.json() as Turn
   }, [apiKey])
   
-  const fetchAction = useCallback(async (prompt: string, world: World, character: Character, buffer: MessageGram[]) => {
+  const fetchAction = useCallback(async (prompt: string, world: World, character: Character, buffer: MessageGram[], model: string) => {
     buffer = JSON.parse(JSON.stringify([...buffer]))
     for(let i = 0; i < buffer.length; i++) {
       if(buffer[i].contentType === 'options') {
@@ -113,7 +113,8 @@ export function useApi() {
         userPrompt: prompt, 
         world: world.summary,
         character: JSON.stringify(character),
-        buffer: JSON.stringify(buffer)
+        buffer: JSON.stringify(buffer),
+        model
       })
     })
   

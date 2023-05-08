@@ -8,10 +8,6 @@ type AsciiGIFProps = {
   className?: string
 }
 
-type FrameData = {
-  getImage: () => HTMLCanvasElement
-}
-
 const AsciiGIF: React.FC<AsciiGIFProps> = ({ url, charactersPerLine, framesPerSecond = 8, className }) => {
   const [asciiFrames, setAsciiFrames] = useState<string[][][]>([])
   const [currentFrame, setCurrentFrame] = useState(0)
@@ -71,7 +67,7 @@ const AsciiGIF: React.FC<AsciiGIFProps> = ({ url, charactersPerLine, framesPerSe
     createAsciiFrames(url, charactersPerLine).then((newAsciiFrames) => {
       setAsciiFrames(newAsciiFrames)
     })
-  }, [url, charactersPerLine])
+  }, [url, createAsciiFrames, charactersPerLine])
 
   useEffect(() => {
     if (asciiFrames.length === 0) {
