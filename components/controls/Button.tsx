@@ -9,13 +9,15 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(({ className, children, onClick, onLongClick, ...props }, ref) => {
   const onLongPress = useCallback(() => {
+    if(props.disabled == true) return;
     onLongClick?.()
-  }, [onLongClick])
+  }, [props, onLongClick])
 
   const bindClicks = useLongPress(onLongPress, {
     onCancel: useCallback(() => {
+      if(props.disabled == true) return;
       onClick?.()
-    }, [onClick])
+    }, [props, onClick])
   })
 
   return <button {...bindClicks()} ref={ref} {...props} className={`
