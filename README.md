@@ -1,5 +1,5 @@
 # Venger, rpg-bot
-Choose-your-own-adventure stories based on d20 rules, like Dungeons & Dragons.
+GPT generated choose-your-own-adventure stories based on d20 rules, like Dungeons & Dragons.
 
 🕹️ Play at [https://venger.ai](https://venger.ai)
 
