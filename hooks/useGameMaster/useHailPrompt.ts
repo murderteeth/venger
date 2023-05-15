@@ -19,7 +19,7 @@ export function useHailPrompt() {
       I'm Venger, your ai game master.`
     }, {
       role: 'assistant', content: `
-      I'm trained to run choose-your-own-adventure stories based on d20 srd 5e rules, like Dungeons & Dragons.
+      I'm trained to run choose-your-own-adventure stories based on d20 srd 5e rules like Dungeons & Dragons.
       Sweet!`
     }, {
       role: 'assistant', content: `
