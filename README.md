@@ -7,8 +7,7 @@ GPT generated choose-your-own-adventure stories based on d20 rules like Dungeons
 
 ⚡️ Built with Nextjs and GPT
 
-Experiment! Will change =)
-
+🔑 Venger is bring-your-own-keys. Get sweet, juicy keys here [https://platform.openai.com/account/api-keys](https://platform.openai.com/account/api-keys)
 ```
 yarn
 yarn dev
