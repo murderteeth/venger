@@ -140,11 +140,6 @@ export default function Hail() {
           <div className={'z-50 font-[LadyRadical] text-6xl text-red-600'}>{'Venger'}</div>
           <div className={'z-10'}>{`rpg-bot 0.1 / ${model || 'model not set'}`}</div>
           <div className={'z-10 '}>
-            <A 
-              href={'https://github.com/murderteeth/venger'}
-              target={'_blank'} rel={'noreferrer'}>
-              {'github.com/murderteeth/venger'}
-            </A>
           </div>
         </div>
         <Image src={'/venger.png'} alt={'venger'} width={318} height={318} className={'absolute z-1 bottom-0'} />
