@@ -1,9 +1,9 @@
-import { ChatCompletionRequestMessage, CreateChatCompletionResponse } from 'openai'
+import { OpenAI } from 'openai'
 import { template } from '../../../../utils'
 import { MODELS, moderated, one_shot, top_choice } from '../../../../utils/ai'
-import { AxiosResponse } from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 import { standard_system_prompt } from '@/utils/ai'
+import { openAiApiKey } from '../../openAiApiKey'
 
 const prompt = template`
 SYSTEM: ${'standard_system_prompt'}
@@ -47,17 +47,16 @@ function slimCharacter(character: string) {
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json()
-  const apiKey = body['apiKey']
+  const apiKey = await openAiApiKey(request)
   if(!apiKey) throw 'no api key'
-  const model = body['model']
-  if(!model) throw 'no model'
-  if(!MODELS.includes(model)) throw 'bad model, bad!'
+
+  const body = await request.json()
+  const model = 'gpt-4-1106-preview'
 
   const world = body['world']
   const character = slimCharacter(body['character'])
-  const buffer = JSON.parse(body['buffer']) as ChatCompletionRequestMessage[]
-  if(await moderated(apiKey, buffer[0].content)) throw `MODERATED: ${buffer[0].content}`
+  const buffer = JSON.parse(body['buffer']) as OpenAI.Chat.Completions.ChatCompletionMessageParam[]
+  if(await moderated(apiKey, buffer[0].content as string)) throw `MODERATED: ${buffer[0].content}`
 
   let bufferTransform = ''
   buffer.forEach(message => {
@@ -66,9 +65,9 @@ export async function POST(request: NextRequest) {
   bufferTransform = bufferTransform.replace(/assistant:/g, 'GAMEMASTER:')
   bufferTransform = bufferTransform.replace(/user:/g, 'PLAYER:')
 
-  const response = await one_shot(apiKey, prompt({standard_system_prompt, world, character, buffer: bufferTransform}), .4, model)
-  console.log('/api/action prompt', response.data.usage)
-  let blob = top_choice(response as AxiosResponse<CreateChatCompletionResponse, any>)
+  const response = await one_shot(apiKey, prompt({standard_system_prompt, world, character, buffer: bufferTransform}), .4, model, false)
+  console.log('/api/action prompt', response.usage)
+  let blob = top_choice(response)
   blob = blob.split('PLAYER:')[0]
   blob = blob.replace('[[', '[').replace(']]', ']')
   console.log('response')

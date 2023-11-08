@@ -9,7 +9,7 @@ export function useWorldPromptIntroduction() {
   return useCallback(() => {
     setMessages(current => {
       return [...current, {
-        role: 'assistant', content: `Your OpenAI API key has been set. Let's create a world to play in!`
+        role: 'assistant', content: `Let's create a world to play in!`
       }, {
         role: 'assistant', content: `
         Here's some world examples. You can also

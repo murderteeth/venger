@@ -1,8 +1,8 @@
-import { ChatCompletionRequestMessage, CreateChatCompletionResponse } from 'openai'
+import { OpenAI } from 'openai'
 import { template } from '../../../../utils'
 import { moderated, one_shot, standard_system_prompt, top_choice } from '../../../../utils/ai'
-import { AxiosResponse } from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
+import { openAiApiKey } from '../../openAiApiKey'
 
 const prompt = template`
 SYSTEM: ${'standard_system_prompt'}
@@ -49,10 +49,10 @@ rewrite your response in this JSON format:
 `
 
 export async function POST(request: NextRequest) {
-  const body = await request.json()
-  const apiKey = body['apiKey']
+  const apiKey = await openAiApiKey(request)
   if(!apiKey) throw 'no api key'
 
+  const body = await request.json()
   const character = body['character']
   let slim = JSON.parse(character)
   delete slim['backstory']
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
   slim = JSON.stringify(slim)
   if(await moderated(apiKey, slim)) throw `MODERATED: ${slim}`
 
-  const buffer = JSON.parse(body['buffer']) as ChatCompletionRequestMessage[]
+  const buffer = JSON.parse(body['buffer']) as OpenAI.Chat.Completions.ChatCompletionMessageParam[]
   if(await moderated(apiKey, buffer.join())) throw `MODERATED: ${buffer}`
 
   let bufferTransform = ''
@@ -69,8 +69,8 @@ export async function POST(request: NextRequest) {
   })
 
   const response = await one_shot(apiKey, prompt({standard_system_prompt, character: slim, buffer: bufferTransform}))
-  console.log('/api/sync prompt', response.data.usage)
-  let blob = top_choice(response as AxiosResponse<CreateChatCompletionResponse, any>)
+  console.log('/api/sync prompt', response.usage)
+  let blob = top_choice(response)
   console.log('response')
   console.log(blob)
   

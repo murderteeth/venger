@@ -1,8 +1,9 @@
-import { CreateChatCompletionResponse } from 'openai'
+import { OpenAI } from 'openai'
 import { template } from '../../../../utils'
 import { moderated, one_shot, standard_system_prompt, top_choice } from '../../../../utils/ai'
 import { AxiosResponse } from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
+import { openAiApiKey } from '../../openAiApiKey'
 
 const character_prompt = template`
 SYSTEM: ${'standard_system_prompt'}
@@ -58,17 +59,17 @@ rewrite your response in this JSON format, all properties are required but may b
 `
 
 export async function POST(request: NextRequest) {
-  const body = await request.json()
-  const apiKey = body['apiKey']
+  const apiKey = await openAiApiKey(request)
   if(!apiKey) throw 'no api key'
 
+  const body = await request.json()
   const userPrompt = body['userPrompt']
   if(await moderated(apiKey, userPrompt)) throw `MODERATED: ${userPrompt}`
 
   const world = body['world']
   const response = await one_shot(apiKey, character_prompt({standard_system_prompt, world, userPrompt}), .8)
-  console.log('/character prompt', response.data.usage)
-  const blob = top_choice(response as AxiosResponse<CreateChatCompletionResponse, any>)
+  console.log('/character prompt', response.usage)
+  const blob = top_choice(response)
   
   return NextResponse.json({...JSON.parse(blob)})
 }

@@ -138,8 +138,12 @@ export default function Hail() {
       <div className={'relative w-3/4 h-96 flex flex-col items-center'}>
         <div className={'absolute z-10 bottom-0 pb-4 bg-black/20 backdrop-blur-lg flex flex-col items-center'}>
           <div className={'z-50 font-[LadyRadical] text-6xl text-red-600'}>{'Venger'}</div>
-          <div className={'z-10'}>{`rpg-bot 0.1 / ${model || 'model not set'}`}</div>
+          <div className={'z-10'}>{`rpg-bot 0.1 / ${model || 'gpt-4-1106-preview'}`}</div>
           <div className={'z-10 '}>
+            <A href={'https://github.com/murderteeth/venger'}
+              target={'_blank'} rel={'noreferrer'}>
+              {'github.com/murderteeth/venger'}
+            </A>
           </div>
         </div>
         <Image src={'/venger.png'} alt={'venger'} width={318} height={318} className={'absolute z-1 bottom-0'} />

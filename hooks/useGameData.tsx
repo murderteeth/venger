@@ -26,7 +26,7 @@ export const useGameData = () => useContext(gameDataContext)
 
 export default function GameDataProvider({children}: {children: ReactNode}) {
   const [openAiApiKey, setOpenAiApiKey] = useLocalStorage<string|undefined>('openAiApiKey', undefined)
-  const [model, setModel] = useLocalStorage<string|undefined>('model', undefined)
+  const [model, setModel] = useLocalStorage<string|undefined>('model', 'gpt-4-1106-preview')
   const [world, setWorld] = useLocalStorage<World|undefined>('world', undefined)
   const [player, setPlayer] = useLocalStorage<Character|undefined>('player', undefined)
   const [turn, setTurn] = useLocalStorage<Turn|undefined>('turn', undefined)
@@ -44,7 +44,7 @@ export default function GameDataProvider({children}: {children: ReactNode}) {
   const resetAll = useCallback(() => {
     reset()
     setOpenAiApiKey(undefined)
-    setModel(undefined)
+    setModel('gpt-4-1106-preview')
   }, [reset, setOpenAiApiKey])
 
 	return <gameDataContext.Provider value={{

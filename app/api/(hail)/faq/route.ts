@@ -1,4 +1,4 @@
-import { CreateChatCompletionResponse } from 'openai'
+import { OpenAI } from 'openai'
 import { AxiosResponse } from 'axios'
 import { template } from '../../../../utils'
 import { moderated, one_shot, top_choice } from '../../../../utils/ai'
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 
   // const response = await one_shot(apiKey, faq_prompt({userPrompt}), .7)
   // console.log('/hail prompt', response.data.usage)
-  // const hail = top_choice(response as AxiosResponse<CreateChatCompletionResponse, any>)
+  // const hail = top_choice(response as AxiosResponse<OpenAI.Chat.Completions.ChatCompletion, any>)
   // console.log('hail', hail)
 
   // return NextResponse.json({...JSON.parse(hail)})
