@@ -1,4 +1,4 @@
-import { OpenAI.Chat.Completions.ChatCompletion } from 'openai'
+import { OpenAI } from 'openai'
 import { AxiosResponse } from 'axios'
 import { template } from '../../../../utils'
 import { moderated, one_shot, top_choice } from '../../../../utils/ai'
