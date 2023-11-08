@@ -1,9 +1,10 @@
-import { CreateChatCompletionResponse } from 'openai'
+import { OpenAI } from 'openai'
 import { template } from '../../../../utils'
 import { MODELS, moderated, one_shot, top_choice } from '../../../../utils/ai'
 import { AxiosResponse } from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 import { standard_system_prompt } from '@/utils/ai'
+import { openAiApiKey } from '../../openAiApiKey'
 
 const start_prompt = template`
 SYSTEM: ${'standard_system_prompt'}
@@ -31,12 +32,11 @@ rewrite your response in this JSON format:
 `
 
 export async function POST(request: NextRequest) {
-  const body = await request.json()
-  const apiKey = body['apiKey']
+  const apiKey = await openAiApiKey(request)
   if(!apiKey) throw 'no api key'
-  const model = body['model']
-  if(!model) throw 'no model'
-  if(!MODELS.includes(model)) throw 'bad model, bad!'
+
+  const body = await request.json()
+  const model = 'gpt-4-1106-preview'
 
   const userPrompt = body['userPrompt']
   if(await moderated(apiKey, userPrompt)) throw `MODERATED: ${userPrompt}`
@@ -45,8 +45,8 @@ export async function POST(request: NextRequest) {
   const character = body['character']
 
   const reponse = await one_shot(apiKey, start_prompt({standard_system_prompt, world, character, userPrompt}), .75, model)
-  console.log('/api/start prompt', reponse.data.usage)
-  const json = top_choice(reponse as AxiosResponse<CreateChatCompletionResponse, any>)
+  console.log('/api/start prompt', reponse.usage)
+  const json = top_choice(reponse)
 
   return NextResponse.json({...JSON.parse(json)})
 }

@@ -4,6 +4,8 @@ import { useMessages } from '../useMessages'
 import { useWorldPromptIntroduction } from './useWorldPrompt'
 import { useApi } from '../useApi'
 import { useGameData } from '../useGameData'
+import { config } from '@/config'
+import { MessageGram } from '@/components/Messenger'
 
 export function useHailPrompt() {
   const { messages, setMessages } = useMessages()
@@ -12,7 +14,7 @@ export function useHailPrompt() {
   const { fetchHail } = useApi()
 
   const introduceYourself = useCallback(() => {
-    setMessages([{
+    const intro = [{
       role: 'assistant', content: '👋 Hail!'
     }, {
       role: 'assistant', content: `
@@ -21,21 +23,32 @@ export function useHailPrompt() {
       role: 'assistant', content: `
       I'm trained to run choose-your-own-adventure stories based on d20 srd 5e rules like Dungeons & Dragons.
       Sweet!`
-    }, {
-      role: 'assistant', content: `
-      🧠 Before we start, lets setup your OpenAI API key.
-      You can also enable GPT4 if you have access to it 👀`
-    }, {
-      role: 'assistant', contentType: 'component', content: 'settings'
-    }])
+    }] as MessageGram[]
+
+    if(config.NEXT_PUBLIC_BYOK) {
+      intro.push(...[{
+        role: 'assistant', content: `
+        🧠 Before we start, lets setup your OpenAI API key.
+        You can also enable GPT4 if you have access to it 👀`
+      }, {
+        role: 'assistant', contentType: 'component', content: 'settings'
+      }] as MessageGram[])
+    }
+
+    setMessages(intro)
   }, [setMessages])
 
   useEffect(() => {
     if(messages.length > 0) return
-    if(openAiApiKey) {
-      introduceWorldPrompt()
+    if(config.NEXT_PUBLIC_BYOK) {
+      if(openAiApiKey) {
+        introduceWorldPrompt()
+      } else {
+        introduceYourself()
+      }
     } else {
       introduceYourself()
+      introduceWorldPrompt()
     }
   }, [messages, openAiApiKey, introduceYourself, introduceWorldPrompt])
 

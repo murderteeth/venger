@@ -9,6 +9,7 @@ import { useActionPrompt } from './useActionPrompt'
 import { useMessages } from '../useMessages'
 import { useHailPrompt } from './useHailPrompt'
 import { useApi } from '../useApi'
+import { config } from '@/config'
 
 export interface GameMaster {
   promptType: 'hail' | 'world' | 'player' | 'start' | 'action',
@@ -32,7 +33,7 @@ export default function GmProvider({children}: {children: ReactNode}) {
   const [sync, setSync] = useState(false)
 
   const promptType = useMemo(() => {
-    if(!openAiApiKey) return 'hail'
+    if(config.NEXT_PUBLIC_BYOK && !openAiApiKey) return 'hail'
     if(!world) return 'world'
     if(!player) return 'player'
     if(!turn) return 'start'

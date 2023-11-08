@@ -1,4 +1,4 @@
-import { CreateChatCompletionResponse } from 'openai'
+import { OpenAI } from 'openai'
 import { AxiosResponse } from 'axios'
 import { moderated, multi_shot, STRONGEST_MODEL, top_choice } from '../../../../utils/ai'
 import { NextRequest, NextResponse } from 'next/server'
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
   // ], .5, STRONGEST_MODEL)
 
   // console.log('/hail prompt', response.data.usage)
-  // const hail = top_choice(response as AxiosResponse<CreateChatCompletionResponse, any>)
+  // const hail = top_choice(response as AxiosResponse<OpenAI.Chat.Completions.ChatCompletion, any>)
   // console.log('hail', hail)
 
   // return NextResponse.json(JSON.parse(hail))
